@@ -34,11 +34,16 @@ namespace Hadronium
       public Point Position;
       public Vector Velocity;
 #endif
+    }
+
+    public struct ParticleInfo
+    {
       public double Mass;
       public bool Fixed;
     }
 
     public Particle[] particles;
+    public ParticleInfo[] particleInfos;
 
     [StructLayout(LayoutKind.Sequential)]
     public struct Parameters
@@ -62,7 +67,7 @@ namespace Hadronium
     
     public void Start(Link[] links)
     {
-      handle = EngineStart(ref parameters, particles, particles.Length, links, links.Length);
+      handle = EngineStart(ref parameters, particles.Length, particles, particleInfos, links.Length, links);
     }
 
     public void Stop()
@@ -84,24 +89,27 @@ namespace Hadronium
     public Parameters Sync()
     {
       var outputParams = parameters;
-      EngineSync(handle, ref outputParams, ref particles, particles.Length);
+      EngineSync(handle, ref outputParams, particles.Length, ref particles, particleInfos);
       return outputParams;
     }
 
     [DllImport("Engine.dll", CallingConvention = CallingConvention.Cdecl)]
     static extern IntPtr EngineStart(
         ref Parameters parameters,
-        [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] Particle[] particles,
         long particleCount,
-        [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 4)] Link[] links,
-        long linkCount);
+        [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] Particle[] particles,
+        [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] ParticleInfo[] particleInfos,
+        long linkCount,
+        [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 4)] Link[] links
+        );
 
     [DllImport("Engine.dll", CallingConvention = CallingConvention.Cdecl)]
     static extern void EngineSync(
         IntPtr engine,
         ref Parameters parameters,
-        [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 3)] ref Particle[] particles,
-        long particleCount);
+        long particleCount,
+        [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] ref Particle[] particles,
+        [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] ParticleInfo[] particleInfos);
 
     [DllImport("Engine.dll", CallingConvention = CallingConvention.Cdecl)]
     static extern long EngineStepCount(

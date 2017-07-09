@@ -5,14 +5,25 @@
 typedef double ValType;
 const int Dimension = 2;
 
-extern "C" __declspec(dllexport) void* EngineStart(Parameters* parameters, Particle<ValType, Dimension>* particles, __int64 particleCount, Link* links, __int64 linkCount)
+extern "C" __declspec(dllexport) void* EngineStart(
+  Parameters* parameters, 
+  __int64 particleCount, 
+  Particle<ValType, Dimension>* particles, 
+  ParticleInfo* particleInfos,
+  __int64 linkCount, 
+  LinkInfo* links)
 {
-  return new Engine<ValType, Dimension>(*parameters, particles, particleCount, links, linkCount);
+  return new Engine<ValType, Dimension>(*parameters, particleCount, particles, particleInfos, linkCount, links);
 }
 
-extern "C" __declspec(dllexport) void EngineSync(void* engine, Parameters* parameters, Particle<ValType, Dimension>*& particles, __int64)
+extern "C" __declspec(dllexport) void EngineSync(
+  void* engine, 
+  Parameters* parameters, 
+  __int64 particleCount, 
+  Particle<ValType, Dimension>*& particles,
+  ParticleInfo* particleInfos)
 {
-  ((Engine<ValType, Dimension>*)engine)->Sync(*parameters, particles);
+  ((Engine<ValType, Dimension>*)engine)->Sync(*parameters, particles, particleInfos);
 }
 
 extern "C" __declspec(dllexport) __int64 EngineStepCount(void* engine)

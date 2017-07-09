@@ -216,11 +216,12 @@ namespace Hadronium
       if (!Active)
       {
         engine.particles = new Engine.Particle[Particles.Count];
+        engine.particleInfos = new Engine.ParticleInfo[Particles.Count];
         for (int i = 0; i < Particles.Count; i++)
         {
           engine.particles[i].Position = Particles[i].Position;
           engine.particles[i].Velocity = Particles[i].Velocity;
-          engine.particles[i].Mass = Particles[i].Mass;
+          engine.particleInfos[i].Mass = Particles[i].Mass;
         }
         engine.Start(Links.ToArray());
       }
@@ -369,7 +370,7 @@ namespace Hadronium
         return;
       for (int i = 0; i < engine.particles.Length; i++)
       {
-        engine.particles[i].Fixed = Particles[i].Fixed;
+        engine.particleInfos[i].Fixed = Particles[i].Fixed;
         if (Particles[i].Fixed)
         {
           engine.particles[i].Position = Particles[i].Position;

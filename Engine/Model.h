@@ -7,12 +7,16 @@ struct Particle
 {
   Vector<Number, Dim> Position;
   Vector<Number, Dim> Velocity;
+};
+
+struct ParticleInfo
+{
   double Mass;
   bool Fixed;
 };
 
 
-struct Link
+struct LinkInfo
 {
   int A;
   int B;

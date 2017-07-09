@@ -11,33 +11,36 @@ template<typename Number, int Dim>
 class Engine
 {
 public:
-  Engine(Parameters& parameters, Particle<Number, Dim>* particles, long particleCount, Link* links, long linkCount)
+  using MyParticle = Particle<Number, Dim>;
+
+  Engine(Parameters& parameters, 
+    long particleCount,
+    MyParticle* particles,
+    ParticleInfo* particleInfos,
+    long linkCount,
+    LinkInfo* links)
   {
     Params = parameters;
     BarrierParams = parameters;
     ParticleCount = particleCount;
     LinkCount = linkCount;
-    Items.reset(new Item[particleCount]);
-    Extras.reset(new Extra[particleCount]);
-    Links.reset(new Link[linkCount]);
-    Barrier = new Particle<Number, Dim>[particleCount];
+    WorkingParticles.reset(new MyParticle[particleCount]);
+    ParticleInfos.reset(new ParticleInfo[particleCount]);
+    Links.reset(new LinkInfo[linkCount]);
+    BarrierParticles.reset(new MyParticle[particleCount]);
     for (int i = 0; i < ParticleCount; i++)
     {
-      Items[i].Position = particles[i].Position;
-      Items[i].Velocity = particles[i].Velocity;
-      Extras[i].Mass = particles[i].Mass;
-      Extras[i].Fixed = particles[i].Fixed;
-      Barrier[i] = particles[i];
+      WorkingParticles[i] = particles[i];
+      ParticleInfos[i] = particleInfos[i];
+      BarrierParticles[i] = particles[i];
     }
     for (int i = 0; i < LinkCount; i++)
     {
-      Links[i].A = links[i].A;
-      Links[i].B = links[i].B;
-      Links[i].Strength = links[i].Strength;
+      Links[i] = links[i];
     }
-    Solver.Initialize(particleCount * 4, &Items[0].Position.Data[0], [this](const Number* y, Number* fy) 
+    Solver.Initialize(particleCount * 4, &WorkingParticles[0].Position.Data[0], [this](const Number* y, Number* fy) 
     { 
-      return Calculate((const Item*)y, (Item*)fy); 
+      return Calculate((const MyParticle*)y, (MyParticle*)fy);
     });
     ShouldStop = false;
 
@@ -51,22 +54,22 @@ public:
     ShouldStop = true;
     WorkerThread.join();
   }
-  void Sync(Parameters& parameters, Particle<Number, Dim>* particles)
+  void Sync(Parameters& parameters, Particle<Number, Dim>* particles, ParticleInfo* particleInfos)
   {
     std::lock_guard<std::mutex> lock(Mutex);
 
     for (int i = 0; i < ParticleCount; i++)
     {
-      Barrier[i].Fixed = particles[i].Fixed;
-      if (Extras[i].Fixed)
+      ParticleInfos[i].Fixed = particleInfos[i].Fixed;
+      if (ParticleInfos[i].Fixed)
       {
-        Barrier[i].Position = particles[i].Position;
-        Barrier[i].Velocity = particles[i].Velocity;
+        BarrierParticles[i].Position = particles[i].Position;
+        BarrierParticles[i].Velocity = particles[i].Velocity;
       }
       else
       {
-        particles[i].Position = Barrier[i].Position;
-        particles[i].Velocity = Barrier[i].Velocity;
+        particles[i].Position = BarrierParticles[i].Position;
+        particles[i].Velocity = BarrierParticles[i].Velocity;
       }
     }
 
@@ -81,22 +84,12 @@ public:
 private:
   EulerSolver<Number> Solver;
   //	RungeKuttaSolver<Number> Solver;
-  struct Item
-  {
-    Vector<Number, Dim> Position;
-    Vector<Number, Dim> Velocity;
-  };
 
-  struct Extra
-  {
-    double Mass;
-    bool Fixed;
-  };
-  std::unique_ptr<Item[]> Items;
-  std::unique_ptr<Link[]> Links;
-  std::unique_ptr<Extra[]> Extras;
+  std::unique_ptr<MyParticle[]> WorkingParticles;
+  std::unique_ptr<LinkInfo[]> Links;
+  std::unique_ptr<ParticleInfo[]> ParticleInfos;
 
-  Particle<Number, Dim>* Barrier;
+  std::unique_ptr<MyParticle[]> BarrierParticles;
 
   long ParticleCount;
   long LinkCount;
@@ -107,7 +100,7 @@ private:
   std::mutex Mutex;
   bool ShouldStop;
 
-  void Calculate(const Item* inputs, Item* outputs)
+  void Calculate(const MyParticle* inputs, MyParticle* outputs)
   {
     for (int i = ParticleCount - 1; i >= 0; i--)
     {
@@ -120,8 +113,8 @@ private:
         auto v = (inputs[j].Position - inputs[i].Position);
         auto dist = v.Length();
         v *= Params.In.ParticleAttraction * pow(dist, Params.In.ParticlePower - 1);
-        outputs[i].Velocity += v * Extras[j].Mass;
-        outputs[j].Velocity -= v * Extras[i].Mass;
+        outputs[i].Velocity += v * ParticleInfos[j].Mass;
+        outputs[j].Velocity -= v * ParticleInfos[i].Mass;
       }
       outputs[i].Velocity -= inputs[i].Velocity * Params.In.Viscosity;
     }
@@ -132,8 +125,8 @@ private:
       auto v = inputs[link.B].Position - inputs[link.A].Position;
       auto dist = v.Length();
       v *= Params.In.LinkAttraction * link.Strength / pow(dist, Params.In.LinkPower - 1);
-      outputs[link.A].Velocity += v * Extras[link.B].Mass;
-      outputs[link.B].Velocity -= v * Extras[link.A].Mass;
+      outputs[link.A].Velocity += v * ParticleInfos[link.B].Mass;
+      outputs[link.B].Velocity -= v * ParticleInfos[link.A].Mass;
       outputs[link.A].Velocity.Data[0] -= Params.In.StretchAttraction;
       outputs[link.B].Velocity.Data[0] += Params.In.StretchAttraction;
     }
@@ -156,16 +149,15 @@ private:
 
           for (int i = 0; i < ParticleCount; i++)
           {
-            Extras[i].Fixed = Barrier[i].Fixed;
-            if (Barrier[i].Fixed)
+            if (ParticleInfos[i].Fixed)
             {
-              Items[i].Position = Barrier[i].Position;
-              Items[i].Velocity = Barrier[i].Velocity;
+              WorkingParticles[i].Position = BarrierParticles[i].Position;
+              WorkingParticles[i].Velocity = BarrierParticles[i].Velocity;
             }
             else
             {
-              Barrier[i].Position = Items[i].Position;
-              Barrier[i].Velocity = Items[i].Velocity;
+              BarrierParticles[i].Position = WorkingParticles[i].Position;
+              BarrierParticles[i].Velocity = WorkingParticles[i].Velocity;
             }
           }
           memcpy(&Params.In, &BarrierParams.In, sizeof(Params.In));
