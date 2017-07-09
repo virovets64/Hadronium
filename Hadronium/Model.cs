@@ -273,7 +273,7 @@ namespace Hadronium
     {
       if (particles.Count == 0)
         return;
-      double averageDist = Math.Pow(zone.SizeX * zone.SizeY * zone.SizeZ / Particles.Count, (double)1/3);
+      double averageDist = Math.Pow(zone.SizeX * zone.SizeY * zone.SizeZ / particles.Count, (double)1/3);
       var random = new Random();
       foreach (var p in particles)
       {

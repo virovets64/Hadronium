@@ -125,9 +125,6 @@ namespace Hadronium
 
     public void NewRandomModel(int particleCount, int linkCount)
     {
-      Size size = RenderSize;
-      Rect rect = new Rect(size);
-      rect.Inflate(-size.Width / 4, -size.Height / 4);
       model.AddRandomParticles(particleCount, linkCount, getInitialRect());
 
       Random random = new Random();
@@ -553,7 +550,8 @@ namespace Hadronium
       rect.Inflate(-size.Width / 4, -size.Height / 4);
       var result = ToWorldCoord(rect);
 #if Model3D
-      result.SizeZ = size.Width;
+      result.Z = result.X;
+      result.SizeZ = result.SizeX;
 #endif
       return result;
 
