@@ -1,0 +1,55 @@
+﻿<Window x:Class="Hadronium.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:custom="clr-namespace:Hadronium"
+        Title="Hadronium" Width="800" Height="600" Closing="Window_Closing">
+  <Window.CommandBindings>
+    <CommandBinding Command="{x:Static custom:MainWindow.NewCmd}" Executed="NewCmdExecuted" CanExecute="NewCmdCanExecute" />
+    <CommandBinding Command="{x:Static custom:MainWindow.LoadCmd}" Executed="LoadCmdExecuted" CanExecute="LoadCmdCanExecute" />
+    <CommandBinding Command="{x:Static custom:MainWindow.RandomizeCmd}" Executed="RandomizeCmdExecuted" CanExecute="RandomizeCmdCanExecute" />
+    <CommandBinding Command="{x:Static custom:MainWindow.StartCmd}" Executed="StartCmdExecuted" CanExecute="StartCmdCanExecute" />
+    <CommandBinding Command="{x:Static custom:MainWindow.StopCmd}" Executed="StopCmdExecuted" CanExecute="StopCmdCanExecute" />
+    <CommandBinding Command="{x:Static custom:MainWindow.PinCmd}" Executed="PinCmd_Executed" CanExecute="PinCmd_CanExecute" />
+    <CommandBinding Command="{x:Static custom:MainWindow.UnpinCmd}" CanExecute="UnpinCmd_CanExecute" Executed="UnpinCmd_Executed" />
+    <CommandBinding Command="Open" Executed="OpenCmdExecuted" />
+    <CommandBinding Command="Save" Executed="SaveCmdExecuted" />
+  </Window.CommandBindings>
+
+  <Grid Name="grid1">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*"/>
+      <ColumnDefinition Width="Auto"/>
+    </Grid.ColumnDefinitions>
+    <StackPanel Name="controlPanel" Orientation="Vertical" Width="300" Grid.Column="1">
+      <StackPanel Orientation="Horizontal">
+        <Label Content="P:"/>
+        <TextBox Name="textBoxParticleCount" Text="10" Width="44"/>
+        <Label Content="L:"/>
+        <TextBox Name="textBoxLinkCount" Text="15" Width="44"/>
+      </StackPanel>
+      <StackPanel Orientation="Horizontal">
+        <Button Content="New" Command="{x:Static custom:MainWindow.NewCmd}" />
+        <Button Content="Open" Command="ApplicationCommands.Open" />
+        <Button Content="Save" Command="ApplicationCommands.Save" />
+        <Button Content="Randomize" Command="{x:Static custom:MainWindow.RandomizeCmd}" />
+        <Button Content="Projects.xml" Command="{x:Static custom:MainWindow.LoadCmd}" />
+      </StackPanel>
+      <StackPanel Orientation="Horizontal">
+        <Button Content="Start" Command="{x:Static custom:MainWindow.StartCmd}"/>
+        <Button Content="Stop" Command="{x:Static custom:MainWindow.StopCmd}" />
+        <Button Content="Pin" Command="{x:Static custom:MainWindow.PinCmd}" />
+        <Button Content="Unpin" Command="{x:Static custom:MainWindow.UnpinCmd}" />
+      </StackPanel>
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+        <Ellipse Name="Wheel" Width="150" Height="150" StrokeThickness="2" Stroke="Blue" MouseDown="Wheel_MouseDown" MouseMove="Wheel_MouseMove" MouseUp="Wheel_MouseUp">
+          <Ellipse.Fill>
+            <RadialGradientBrush Center="0.4,0.4" GradientOrigin="0.4,0.4">
+              <GradientStop Color="Bisque" Offset="0" />
+              <GradientStop Color="Azure" Offset="1" />
+            </RadialGradientBrush>
+          </Ellipse.Fill>
+        </Ellipse>
+      </StackPanel>
+    </StackPanel>
+  </Grid>
+</Window>

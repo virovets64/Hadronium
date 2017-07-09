@@ -30,3 +30,10 @@
 *.exe
 *.out
 *.app
+bin
+Engine/obj
+*.user
+*.sdf
+*.opensdf
+*.suo
+Hadronium/obj
