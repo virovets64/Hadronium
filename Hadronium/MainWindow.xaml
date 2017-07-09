@@ -15,31 +15,34 @@
     <CommandBinding Command="Save" Executed="SaveCmdExecuted" />
   </Window.CommandBindings>
 
-  <Grid Name="grid1">
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="*"/>
-      <ColumnDefinition Width="Auto"/>
-    </Grid.ColumnDefinitions>
-    <StackPanel Name="controlPanel" Orientation="Vertical" Width="300" Grid.Column="1">
+  <DockPanel LastChildFill="True">
+    <WrapPanel DockPanel.Dock="Top">
+      <Menu>
+        <MenuItem Header="_File">
+          <MenuItem Header="_New" Command="{x:Static custom:MainWindow.NewCmd}"/>
+          <MenuItem Header="_Open" Command="ApplicationCommands.Open"/>
+          <MenuItem Header="_Save" Command="ApplicationCommands.Save"/>
+        </MenuItem>
+        <MenuItem Header="Edit">
+          <MenuItem Header="Randomize" Command="{x:Static custom:MainWindow.RandomizeCmd}"/>
+        </MenuItem>
+        <Separator/>
+        <MenuItem Header="Pin" Command="{x:Static custom:MainWindow.PinCmd}"/>
+        <MenuItem Header="Unpin"  Command="{x:Static custom:MainWindow.UnpinCmd}"/>
+        <Separator/>
+        <MenuItem Header="Start" Command="{x:Static custom:MainWindow.StartCmd}"/>
+        <MenuItem Header="Stop"  Command="{x:Static custom:MainWindow.StopCmd}"/>
+      </Menu>
+    </WrapPanel>
+    <StackPanel Name="controlPanel" Orientation="Vertical" Width="300" DockPanel.Dock="Right">
       <StackPanel Orientation="Horizontal">
         <Label Content="P:"/>
         <TextBox Name="textBoxParticleCount" Text="10" Width="44"/>
         <Label Content="L:"/>
         <TextBox Name="textBoxLinkCount" Text="15" Width="44"/>
       </StackPanel>
-      <StackPanel Orientation="Horizontal">
-        <Button Content="New" Command="{x:Static custom:MainWindow.NewCmd}" />
-        <Button Content="Open" Command="ApplicationCommands.Open" />
-        <Button Content="Save" Command="ApplicationCommands.Save" />
-        <Button Content="Randomize" Command="{x:Static custom:MainWindow.RandomizeCmd}" />
-        <Button Content="Projects.xml" Command="{x:Static custom:MainWindow.LoadCmd}" />
-      </StackPanel>
-      <StackPanel Orientation="Horizontal">
-        <Button Content="Start" Command="{x:Static custom:MainWindow.StartCmd}"/>
-        <Button Content="Stop" Command="{x:Static custom:MainWindow.StopCmd}" />
-        <Button Content="Pin" Command="{x:Static custom:MainWindow.PinCmd}" />
-        <Button Content="Unpin" Command="{x:Static custom:MainWindow.UnpinCmd}" />
-      </StackPanel>
+      <StackPanel Orientation="Horizontal"/>
+      <StackPanel Orientation="Horizontal"/>
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
         <Ellipse Name="Wheel" Width="150" Height="150" StrokeThickness="2" Stroke="Blue" MouseDown="Wheel_MouseDown" MouseMove="Wheel_MouseMove" MouseUp="Wheel_MouseUp">
           <Ellipse.Fill>
@@ -51,5 +54,6 @@
         </Ellipse>
       </StackPanel>
     </StackPanel>
-  </Grid>
+    <ContentControl Name="modelPlaceholder"/>
+  </DockPanel>
 </Window>

@@ -157,7 +157,7 @@ namespace Hadronium
       InitializeComponent();
       modelControl = new ModelControl();
       modelControl.ClipToBounds = true;
-      grid1.Children.Add(modelControl);
+      modelPlaceholder.Content = modelControl;
 #if NativeEngine
             Title += " (native engine)";
 #else
