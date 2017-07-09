@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Windows;
+#if Model3D
+using System.Windows.Media.Media3D;
+#endif
 
 namespace Hadronium
 {
@@ -25,8 +28,8 @@ namespace Hadronium
     public struct Particle
     {
 #if Model3D
-                public Point3D Position;
-                public Vector3D Velocity;
+      public Point3D Position;
+      public Vector3D Velocity;
 #else
       public Point Position;
       public Vector Velocity;

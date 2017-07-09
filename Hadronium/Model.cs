@@ -239,7 +239,7 @@ namespace Hadronium
 
 
 #if Model3D
-        public void Randomize(int particleCount, int linkCount, Rect3D zone)
+    public void AddRandomParticles(int particleCount, int linkCount, Rect3D zone)
 #else
     public void AddRandomParticles(int particleCount, int linkCount, Rect zone)
 #endif
@@ -266,6 +266,41 @@ namespace Hadronium
       }
     }
 
+
+#if Model3D
+    private void randomizeParticlePositions(List<Particle> particles, Rect3D zone)
+    {
+      if (particles.Count == 0)
+        return;
+      double averageDist = Math.Pow(zone.SizeX * zone.SizeY * zone.SizeZ / Particles.Count, (double)1/3);
+      var random = new Random();
+      foreach (var p in particles)
+      {
+        Utils.Zero(ref p.Velocity);
+        while (true)
+        {
+          p.Position.X = random.NextDouble() * zone.SizeX + zone.X;
+          p.Position.Y = random.NextDouble() * zone.SizeY + zone.Y;
+          p.Position.Z = random.NextDouble() * zone.SizeZ + zone.Z;
+
+          bool isFarEnough = true;
+          foreach (var p2 in particles)
+          {
+            if (p2 != p)
+            {
+              if ((p2.Position - p.Position).Length < averageDist / 2)
+              {
+                isFarEnough = false;
+                break;
+              }
+            }
+          }
+          if (isFarEnough)
+            break;
+        }
+      }
+    }
+#else
     private void randomizeParticlePositions(List<Particle> particles, Rect zone)
     {
       if (particles.Count == 0)
@@ -297,29 +332,21 @@ namespace Hadronium
         }
       }
     }
+#endif
+
 
 
 #if Model3D
-        public void RandomizePositions(Rect3D zone)
-        {
-            if (Particles.Count == 0)
-                return;
-            double averageDist = Math.Pow(zone.SizeX * zone.SizeY * zone.SizeZ / Particles.Count, (double)1/3);
-            var random = new Random();
-            foreach (var p in Particles)
-            {
-                Utils.Zero(ref p.Velocity);
-                while (true)
-                {
-                    p.Position.X = random.NextDouble() * zone.SizeX + zone.X;
-                    p.Position.Y = random.NextDouble() * zone.SizeY + zone.Y;
-                    p.Position.Z = random.NextDouble() * zone.SizeZ + zone.Z;
-#else
-    public void RandomizePositions(Rect zone)
-#endif
+    public void RandomizePositions(Rect3D zone)
     {
       randomizeParticlePositions(Particles, zone);
     }
+#else
+    public void RandomizePositions(Rect zone)
+    {
+      randomizeParticlePositions(Particles, zone);
+    }
+#endif
 
 
     private bool AddLink(int a, int b)

@@ -543,7 +543,7 @@ namespace Hadronium
     }
 
 #if Model3D
-        private Rect3D getInitialRect()
+    public Rect3D getInitialRect()
 #else
     public Rect getInitialRect()
 #endif
@@ -553,7 +553,7 @@ namespace Hadronium
       rect.Inflate(-size.Width / 4, -size.Height / 4);
       var result = ToWorldCoord(rect);
 #if Model3D
-            result.SizeZ = size.Width;
+      result.SizeZ = size.Width;
 #endif
       return result;
 

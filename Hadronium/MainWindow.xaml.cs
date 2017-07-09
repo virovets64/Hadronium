@@ -267,6 +267,27 @@ namespace Hadronium
       write(result, "Y", doubleToString(value.Y));
       return result;
     }
+
+    private XmlNode write(XmlNode node, string name, Vector value)
+    {
+      return write(node, name, (Point)value);
+    }
+
+#if Model3D
+    private XmlNode write(XmlNode node, string name, Point3D value)
+    {
+      var result = node.AppendChild(node.OwnerDocument.CreateElement(name));
+      write(result, "X", doubleToString(value.X));
+      write(result, "Y", doubleToString(value.Y));
+      write(result, "Z", doubleToString(value.Z));
+      return result;
+    }
+
+    private XmlNode write(XmlNode node, string name, Vector3D value)
+    {
+      return write(node, name, (Point3D)value);
+    }
+#endif    
     private XmlNode write(XmlNode node, string name, Color value)
     {
       var result = node.AppendChild(node.OwnerDocument.CreateElement(name));
@@ -282,7 +303,7 @@ namespace Hadronium
       write(result, "Id", value.Name, null);
       write(result, "Mass", doubleToString(value.Mass), "1");
       write(result, "Position", value.Position);
-      write(result, "Velocity", (Point)value.Velocity);
+      write(result, "Velocity", value.Velocity);
       write(result, "FillColor", value.FillColor);
       write(result, "StrokeColor", value.StrokeColor);
       return result;
@@ -361,6 +382,25 @@ namespace Hadronium
       result.X = stringToDouble(read(node, "X"));
       result.Y = stringToDouble(read(node, "Y"));
     }
+#if Model3D
+    private void read(XmlNode node, ref Point3D result)
+    {
+      if (node == null)
+        return;
+      result.X = stringToDouble(read(node, "X"));
+      result.Y = stringToDouble(read(node, "Y"));
+      result.Z = stringToDouble(read(node, "Z"));
+    }
+    private void read(XmlNode node, ref Vector3D result)
+    {
+      if (node == null)
+        return;
+      result.X = stringToDouble(read(node, "X"));
+      result.Y = stringToDouble(read(node, "Y"));
+      result.Z = stringToDouble(read(node, "Z"));
+    }
+#endif
+    
     private void read(XmlNode node, ref Color result)
     {
       if (node == null)
