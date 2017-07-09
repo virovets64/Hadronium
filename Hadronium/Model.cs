@@ -231,32 +231,73 @@ namespace Hadronium
       engine.Stop();
     }
 
+    public void Clear()
+    {
+      Particles.Clear();
+      Links.Clear();
+    }
+
+
 #if Model3D
         public void Randomize(int particleCount, int linkCount, Rect3D zone)
 #else
-    public void Randomize(int particleCount, int linkCount, Rect zone)
+    public void AddRandomParticles(int particleCount, int linkCount, Rect zone)
 #endif
     {
       int maxLinkCount = particleCount * (particleCount - 1) / 2;
       if (linkCount > maxLinkCount)
         throw new Exception(string.Format("{0} particles cannot have more than {1} links", particleCount, maxLinkCount));
-      Particles.Clear();
-      Links.Clear();
       var random = new Random();
+      var newParticles = new List<Particle>();
       for (int i = 0; i < particleCount; i++)
       {
         Particle particle = new Particle();
-        Particles.Add(particle);
+        newParticles.Add(particle);
       }
+      randomizeParticlePositions(newParticles, zone);
+      var firstNewParticleIndex = Particles.Count;
+      Particles.AddRange(newParticles);
       for (int i = 0; i < linkCount; )
       {
-        int nA = random.Next(particleCount);
-        int nB = random.Next(particleCount);
+        int nA = firstNewParticleIndex + random.Next(particleCount);
+        int nB = firstNewParticleIndex + random.Next(particleCount);
         if (AddLink(nA, nB))
           i++;
       }
-      RandomizePositions(zone);
     }
+
+    private void randomizeParticlePositions(List<Particle> particles, Rect zone)
+    {
+      if (particles.Count == 0)
+        return;
+      double averageDist = Math.Sqrt(zone.Height * zone.Width / particles.Count);
+      var random = new Random();
+      foreach (var p in particles)
+      {
+        Utils.Zero(ref p.Velocity);
+        while (true)
+        {
+          p.Position.X = random.NextDouble() * zone.Width + zone.Left;
+          p.Position.Y = random.NextDouble() * zone.Height + zone.Top;
+
+          bool isFarEnough = true;
+          foreach (var p2 in particles)
+          {
+            if (p2 != p)
+            {
+              if ((p2.Position - p.Position).Length < averageDist / 2)
+              {
+                isFarEnough = false;
+                break;
+              }
+            }
+          }
+          if (isFarEnough)
+            break;
+        }
+      }
+    }
+
 
 #if Model3D
         public void RandomizePositions(Rect3D zone)
@@ -275,36 +316,9 @@ namespace Hadronium
                     p.Position.Z = random.NextDouble() * zone.SizeZ + zone.Z;
 #else
     public void RandomizePositions(Rect zone)
-    {
-      if (Particles.Count == 0)
-        return;
-      double averageDist = Math.Sqrt(zone.Height * zone.Width / Particles.Count);
-      var random = new Random();
-      foreach (var p in Particles)
-      {
-        Utils.Zero(ref p.Velocity);
-        while (true)
-        {
-          p.Position.X = random.NextDouble() * zone.Width + zone.Left;
-          p.Position.Y = random.NextDouble() * zone.Height + zone.Top;
 #endif
-
-          bool isFarEnough = true;
-          foreach (var p2 in Particles)
-          {
-            if (p2 != p)
-            {
-              if ((p2.Position - p.Position).Length < averageDist / 2)
-              {
-                isFarEnough = false;
-                break;
-              }
-            }
-          }
-          if (isFarEnough)
-            break;
-        }
-      }
+    {
+      randomizeParticlePositions(Particles, zone);
     }
 
 

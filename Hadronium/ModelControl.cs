@@ -128,7 +128,7 @@ namespace Hadronium
       Size size = RenderSize;
       Rect rect = new Rect(size);
       rect.Inflate(-size.Width / 4, -size.Height / 4);
-      model.Randomize(particleCount, linkCount, getInitialRect());
+      model.AddRandomParticles(particleCount, linkCount, getInitialRect());
 
       Random random = new Random();
       for (int i = 0; i < model.Particles.Count; i++)

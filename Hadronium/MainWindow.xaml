@@ -7,6 +7,7 @@
     <CommandBinding Command="{x:Static custom:MainWindow.NewCmd}" Executed="NewCmdExecuted" CanExecute="NewCmdCanExecute" />
     <CommandBinding Command="{x:Static custom:MainWindow.LoadCmd}" Executed="LoadCmdExecuted" CanExecute="LoadCmdCanExecute" />
     <CommandBinding Command="{x:Static custom:MainWindow.RandomizeCmd}" Executed="RandomizeCmdExecuted" CanExecute="RandomizeCmdCanExecute" />
+    <CommandBinding Command="{x:Static custom:MainWindow.AddParticlesCmd}" Executed="AddParticlesCmdExecuted" CanExecute="AddParticlesCmdCanExecute" />
     <CommandBinding Command="{x:Static custom:MainWindow.StartCmd}" Executed="StartCmdExecuted" CanExecute="StartCmdCanExecute" />
     <CommandBinding Command="{x:Static custom:MainWindow.StopCmd}" Executed="StopCmdExecuted" CanExecute="StopCmdCanExecute" />
     <CommandBinding Command="{x:Static custom:MainWindow.PinCmd}" Executed="PinCmd_Executed" CanExecute="PinCmd_CanExecute" />
@@ -24,7 +25,8 @@
           <MenuItem Header="_Save" Command="ApplicationCommands.Save"/>
         </MenuItem>
         <MenuItem Header="Edit">
-          <MenuItem Header="Randomize" Command="{x:Static custom:MainWindow.RandomizeCmd}"/>
+          <MenuItem Header="Add particles..." Command="{x:Static custom:MainWindow.AddParticlesCmd}"/>
+          <MenuItem Header="Randomize particle positions" Command="{x:Static custom:MainWindow.RandomizeCmd}"/>
         </MenuItem>
         <Separator/>
         <MenuItem Header="Pin" Command="{x:Static custom:MainWindow.PinCmd}"/>
@@ -35,15 +37,9 @@
       </Menu>
     </WrapPanel>
     <StackPanel Name="controlPanel" Orientation="Vertical" Width="300" DockPanel.Dock="Right">
-      <StackPanel Orientation="Horizontal">
-        <Label Content="P:"/>
-        <TextBox Name="textBoxParticleCount" Text="10" Width="44"/>
-        <Label Content="L:"/>
-        <TextBox Name="textBoxLinkCount" Text="15" Width="44"/>
-      </StackPanel>
       <StackPanel Orientation="Horizontal"/>
       <StackPanel Orientation="Horizontal"/>
-      <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Visibility="Collapsed">
         <Ellipse Name="Wheel" Width="150" Height="150" StrokeThickness="2" Stroke="Blue" MouseDown="Wheel_MouseDown" MouseMove="Wheel_MouseMove" MouseUp="Wheel_MouseUp">
           <Ellipse.Fill>
             <RadialGradientBrush Center="0.4,0.4" GradientOrigin="0.4,0.4">

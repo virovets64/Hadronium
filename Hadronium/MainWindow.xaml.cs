@@ -26,9 +26,9 @@ namespace Hadronium
   public partial class MainWindow : Window
   {
 #if Model3D
-        private const string modelFileExt = ".tangle3D";
+        private const string modelFileExt = ".hadronium3D";
 #else
-    private const string modelFileExt = ".tangle";
+    private const string modelFileExt = ".hadronium";
 #endif
     private Model model = new Model();
     private ModelControl modelControl;
@@ -37,6 +37,7 @@ namespace Hadronium
     public static RoutedCommand NewCmd = new RoutedCommand();
     public static RoutedCommand LoadCmd = new RoutedCommand();
     public static RoutedCommand RandomizeCmd = new RoutedCommand();
+    public static RoutedCommand AddParticlesCmd = new RoutedCommand();
     public static RoutedCommand StartCmd = new RoutedCommand();
     public static RoutedCommand StopCmd = new RoutedCommand();
     public static RoutedCommand PinCmd = new RoutedCommand();
@@ -185,9 +186,7 @@ namespace Hadronium
     {
       try
       {
-        int particleCount = int.Parse(textBoxParticleCount.Text);
-        int linkCount = int.Parse(textBoxLinkCount.Text);
-        modelControl.NewRandomModel(particleCount, linkCount);
+        modelControl.Model.Clear();
         modelRecreated();
       }
       catch (Exception x)
@@ -205,6 +204,21 @@ namespace Hadronium
       modelRecreated();
     }
     private void LoadCmdCanExecute(object sender, CanExecuteRoutedEventArgs e)
+    {
+      e.CanExecute = !model.Active;
+    }
+    private void AddParticlesCmdExecuted(object sender, ExecutedRoutedEventArgs e)
+    {
+      var dialog = new ParticleGenerationDialog();
+      dialog.ParticleCount = 5;
+      dialog.LinkCount = 10;
+      if(dialog.ShowDialog() == true)
+      {
+        modelControl.NewRandomModel(dialog.ParticleCount, dialog.LinkCount);
+        modelRecreated();
+      }
+    }
+    private void AddParticlesCmdCanExecute(object sender, CanExecuteRoutedEventArgs e)
     {
       e.CanExecute = !model.Active;
     }
@@ -451,8 +465,6 @@ namespace Hadronium
     {
       modelControl.Model = model;
       createTunePanel();
-      textBoxParticleCount.Text = model.Particles.Count.ToString();
-      textBoxLinkCount.Text = model.Links.Count.ToString();
       modelControl.InvalidateVisual();
     }
 
