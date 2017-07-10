@@ -44,28 +44,28 @@ namespace Hadronium
     public static RoutedCommand UnpinCmd = new RoutedCommand();
 
     private static PropertyDescription[] modelPropertyDescriptions = new PropertyDescription[] { 
-            new PropertyDescription("TimeScale"         ,   1.0, 0.01, 1000.0, new LogarithmicConverter(1), "RealTimeScale"),
-            new PropertyDescription("ParticleAttraction",  -1.0, -1E3, 1E3, new BiLogarithmicConverter(-1)),
-            new PropertyDescription("LinkAttraction"    ,  10.0, -1E4, 1E4, new BiLogarithmicConverter(10)),
-            new PropertyDescription("StretchAttraction" ,   0.0, -1E5, 1E5, new BiLogarithmicConverter(20)),
-            new PropertyDescription("Gravity"           ,    0.0,-1E3, 1E3, new BiLogarithmicConverter(10)),
-            new PropertyDescription("Viscosity"         ,    10, 0.0, 1000.0, new LogarithmicConverter(10)),
-            new PropertyDescription("Accuracy"          ,    50,  0.1,  1E5, new LogarithmicConverter(50)),
+            new PropertyDescription("TimeScale"         ,   1.0, 0.01, 1000.0, new LogarithmicConverter(), "RealTimeScale"),
+            new PropertyDescription("ParticleAttraction",  -1.0, -1E3, 1E3, new BiLogarithmicConverter(0)),
+            new PropertyDescription("LinkAttraction"    ,  10.0, -1E4, 1E4, new BiLogarithmicConverter(20)),
+            new PropertyDescription("StretchAttraction" ,   0.0, -1E4, 1E4, new BiLogarithmicConverter(1)),
+            new PropertyDescription("Gravity"           ,   0.0, -1E3, 1E3, new BiLogarithmicConverter(1)),
+            new PropertyDescription("Viscosity"         ,  10.0,  0.0, 1000.0, new LogarithmicConverter()),
+            new PropertyDescription("Accuracy"          ,  50.0,  0.1,  1E5, new LogarithmicConverter()),
         };
     private static PropertyDescription[] controlPropertyDescriptions = new PropertyDescription[] { 
-            new PropertyDescription("ViewScale"         ,   1.0, 1E-5, 1E5, new LogarithmicConverter(1)),
-            new PropertyDescription("ParticleSize"      ,   8.0, 0.8, 800.0, new LogarithmicConverter(8)),
-            new PropertyDescription("TextSize"          ,   12.0, 0.12, 1200.0, new LogarithmicConverter(12)),
-            new PropertyDescription("RefreshPeriod"     ,   0.035, 0.0035, 0.35, new LogarithmicConverter(0.035), "RenderElapsedTime"),
+            new PropertyDescription("ViewScale"         ,   1.0, 1E-5, 1E5, new LogarithmicConverter()),
+            new PropertyDescription("ParticleSize"      ,   8.0, 0.8, 800.0, new LogarithmicConverter()),
+            new PropertyDescription("TextSize"          ,  12.0, 0.12, 1200.0, new LogarithmicConverter()),
+            new PropertyDescription("RefreshPeriod"     , 0.035, 0.0035, 0.35, new LogarithmicConverter(), "RenderElapsedTime"),
         };
 
     private static PropertyDescription[] modelStatisticsDescriptions = new PropertyDescription[] { 
-            new PropertyDescription("StepCount"   ,   1.0, 0.001, 1E5),
-            new PropertyDescription("StepElapsedTime"   ,   1.0, 0.001, 1E5,  new LogarithmicConverter(10)),
-            new PropertyDescription("RealTimeScale"         ,   1.0, 0.01, 1000.0, new LogarithmicConverter(10)),
+            new PropertyDescription("StepCount"         ,   1.0, 0.001, 1E5),
+            new PropertyDescription("StepElapsedTime"   ,   1.0, 0.001, 1E5,  new LogarithmicConverter()),
+            new PropertyDescription("RealTimeScale"     ,   1.0, 0.01, 1000.0, new LogarithmicConverter()),
         };
     private static PropertyDescription[] controlStatisticsDescriptions = new PropertyDescription[] { 
-            new PropertyDescription("RenderElapsedTime"   ,   1.0, 1E-10, 1E5,  new LogarithmicConverter(10)),
+            new PropertyDescription("RenderElapsedTime"  ,   1.0, 1E-10, 1E5,  new LogarithmicConverter()),
         };
 
     private void addControls(object source, PropertyDescription[] propertyDescriptions, bool statistics)

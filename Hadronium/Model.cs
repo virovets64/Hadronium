@@ -156,7 +156,7 @@ namespace Hadronium
     public double Gravity
     {
       get { return engine.parameters.In.Gravity; }
-      set { setProperty("StretchAttraction", ref engine.parameters.In.Gravity, value); }
+      set { setProperty("Gravity", ref engine.parameters.In.Gravity, value); }
     }
     public double Accuracy
     {
