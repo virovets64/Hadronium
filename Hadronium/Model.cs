@@ -131,53 +131,43 @@ namespace Hadronium
           PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
       }
     }
+    private Engine.Parameters.Output statistics;
 
     public double Viscosity
     {
-      get { return engine.parameters.Viscosity; }
-      set { setProperty("Viscosity", ref engine.parameters.Viscosity, value); }
+      get { return engine.parameters.In.Viscosity; }
+      set { setProperty("Viscosity", ref engine.parameters.In.Viscosity, value); }
     }
     public double ParticleAttraction
     {
-      get { return engine.parameters.ParticleAttraction; }
-      set { setProperty("ParticleAttraction", ref engine.parameters.ParticleAttraction, value); }
+      get { return engine.parameters.In.ParticleAttraction; }
+      set { setProperty("ParticleAttraction", ref engine.parameters.In.ParticleAttraction, value); }
     }
     public double LinkAttraction
     {
-      get { return engine.parameters.LinkAttraction; }
-      set { setProperty("LinkAttraction", ref engine.parameters.LinkAttraction, value); }
+      get { return engine.parameters.In.LinkAttraction; }
+      set { setProperty("LinkAttraction", ref engine.parameters.In.LinkAttraction, value); }
     }
     public double StretchAttraction
     {
-      get { return engine.parameters.StretchAttraction; }
-      set { setProperty("StretchAttraction", ref engine.parameters.StretchAttraction, value); }
+      get { return engine.parameters.In.StretchAttraction; }
+      set { setProperty("StretchAttraction", ref engine.parameters.In.StretchAttraction, value); }
     }
     public double Accuracy
     {
-      get { return engine.parameters.Accuracy; }
-      set { setProperty("Accuracy", ref engine.parameters.Accuracy, value); }
+      get { return engine.parameters.In.Accuracy; }
+      set { setProperty("Accuracy", ref engine.parameters.In.Accuracy, value); }
     }
-    //public double VelocityLimit
-    //{
-    //    get { return velocityLimit; }
-    //    set { velocityLimit = value; }
-    //}
-    //public double AccelerationLimit
-    //{
-    //    get { return accelerationLimit; }
-    //    set { accelerationLimit = value; }
-    //}
     public double TimeScale
     {
-      get { return engine.parameters.TimeScale; }
-      set { setProperty("TimeScale", ref engine.parameters.TimeScale, value); }
+      get { return engine.parameters.In.TimeScale; }
+      set { setProperty("TimeScale", ref engine.parameters.In.TimeScale, value); }
     }
-
 
     public long StepCount
     {
-      get { return engine.parameters.StepCount; }
-      set { setProperty("StepCount", ref engine.parameters.StepCount, value); }
+      get { return statistics.StepCount; }
+      set { setProperty("StepCount", ref statistics.StepCount, value); }
     }
 
     public long ActualStepCount
@@ -187,14 +177,14 @@ namespace Hadronium
 
     public double StepElapsedTime
     {
-      get { return engine.parameters.StepElapsedTime; }
-      set { setProperty("StepElapsedTime", ref engine.parameters.StepElapsedTime, value); }
+      get { return statistics.StepElapsedTime; }
+      set { setProperty("StepElapsedTime", ref statistics.StepElapsedTime, value); }
     }
 
     public double RealTimeScale
     {
-      get { return engine.parameters.RealTimeScale; }
-      set { setProperty("RealTimeScale", ref engine.parameters.RealTimeScale, value); }
+      get { return statistics.RealTimeScale; }
+      set { setProperty("RealTimeScale", ref statistics.RealTimeScale, value); }
     }
 
     public bool Active
@@ -377,7 +367,7 @@ namespace Hadronium
           engine.particles[i].Velocity = Particles[i].Velocity;
         }
       }
-      var tmp = engine.Sync();
+      engine.Sync();
       for (int i = 0; i < engine.particles.Length; i++)
       {
         if (!Particles[i].Fixed)
@@ -386,9 +376,9 @@ namespace Hadronium
           Particles[i].Velocity = engine.particles[i].Velocity;
         }
       }
-      StepElapsedTime = tmp.StepElapsedTime;
-      StepCount = tmp.StepCount;
-      RealTimeScale = tmp.RealTimeScale;
+      StepCount = engine.parameters.Out.StepCount;
+      StepElapsedTime = engine.parameters.Out.StepElapsedTime;
+      RealTimeScale = engine.parameters.Out.RealTimeScale;
     }
   }
 }

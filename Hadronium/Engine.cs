@@ -11,17 +11,17 @@ namespace Hadronium
   {
     public Engine()
     {
-      parameters.Viscosity = 10;
-      parameters.ParticleAttraction = -1;
-      parameters.ParticlePower = -2;
-      parameters.LinkAttraction = 10;
-      parameters.LinkPower = -1;
-      parameters.StretchAttraction = 0;
-      parameters.Accuracy = 50;
-      parameters.TimeScale = 1;
-      parameters.StepElapsedTime = 0; // in msec
-      parameters.RealTimeScale = 1;
-      parameters.StepCount = 0;
+      parameters.In.Viscosity = 10;
+      parameters.In.ParticleAttraction = -1;
+      parameters.In.ParticlePower = -2;
+      parameters.In.LinkAttraction = 10;
+      parameters.In.LinkPower = -1;
+      parameters.In.StretchAttraction = 0;
+      parameters.In.Accuracy = 50;
+      parameters.In.TimeScale = 1;
+      parameters.Out.StepElapsedTime = 0; // in msec
+      parameters.Out.RealTimeScale = 1;
+      parameters.Out.StepCount = 0;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -48,17 +48,27 @@ namespace Hadronium
     [StructLayout(LayoutKind.Sequential)]
     public struct Parameters
     {
-      public double Viscosity;
-      public double ParticleAttraction;
-      public double ParticlePower;
-      public double LinkAttraction;
-      public double LinkPower;
-      public double StretchAttraction;
-      public double Accuracy;
-      public double TimeScale;
-      public double StepElapsedTime; // in msec
-      public double RealTimeScale;
-      public long StepCount;
+      [StructLayout(LayoutKind.Sequential)]
+      public struct Input
+      {
+        public double Viscosity;
+        public double ParticleAttraction;
+        public double ParticlePower;
+        public double LinkAttraction;
+        public double LinkPower;
+        public double StretchAttraction;
+        public double Accuracy;
+        public double TimeScale;
+      }
+      [StructLayout(LayoutKind.Sequential)]
+      public struct Output
+      {
+        public double StepElapsedTime; // in msec
+        public double RealTimeScale;
+        public long StepCount;
+      }
+      public Input In;
+      public Output Out;
     }
 
     public Parameters parameters;
@@ -86,11 +96,9 @@ namespace Hadronium
       get { return Active ? EngineStepCount(handle) : 0; }
     }
 
-    public Parameters Sync()
+    public void Sync()
     {
-      var outputParams = parameters;
-      EngineSync(handle, ref outputParams, particles.Length, ref particles, particleInfos);
-      return outputParams;
+      EngineSync(handle, ref parameters, particles.Length, ref particles, particleInfos);
     }
 
     [DllImport("Engine.dll", CallingConvention = CallingConvention.Cdecl)]
