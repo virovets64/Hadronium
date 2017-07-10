@@ -48,6 +48,7 @@ namespace Hadronium
             new PropertyDescription("ParticleAttraction",  -1.0, -1E3, 1E3, new BiLogarithmicConverter(-1)),
             new PropertyDescription("LinkAttraction"    ,  10.0, -1E4, 1E4, new BiLogarithmicConverter(10)),
             new PropertyDescription("StretchAttraction" ,   0.0, -1E5, 1E5, new BiLogarithmicConverter(20)),
+            new PropertyDescription("Gravity"           ,    0.0,-1E3, 1E3, new BiLogarithmicConverter(10)),
             new PropertyDescription("Viscosity"         ,    10, 0.0, 1000.0, new LogarithmicConverter(10)),
             new PropertyDescription("Accuracy"          ,    50,  0.1,  1E5, new LogarithmicConverter(50)),
         };

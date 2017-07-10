@@ -34,6 +34,7 @@ struct Parameters
     double LinkAttraction;
     double LinkPower;
     double StretchAttraction;
+    double Gravity;
     double Accuracy;
     double TimeScale;
   } In;

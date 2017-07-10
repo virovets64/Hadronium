@@ -153,6 +153,11 @@ namespace Hadronium
       get { return engine.parameters.In.StretchAttraction; }
       set { setProperty("StretchAttraction", ref engine.parameters.In.StretchAttraction, value); }
     }
+    public double Gravity
+    {
+      get { return engine.parameters.In.Gravity; }
+      set { setProperty("StretchAttraction", ref engine.parameters.In.Gravity, value); }
+    }
     public double Accuracy
     {
       get { return engine.parameters.In.Accuracy; }

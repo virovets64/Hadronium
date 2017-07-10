@@ -117,6 +117,7 @@ private:
         outputs[j].Velocity -= v * ParticleInfos[i].Mass;
       }
       outputs[i].Velocity -= inputs[i].Velocity * Params.In.Viscosity;
+      outputs[i].Velocity.Data[1] += Params.In.Gravity;
     }
 
     for (int i = 0; i < LinkCount; i++)

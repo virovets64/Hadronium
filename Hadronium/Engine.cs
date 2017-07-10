@@ -17,6 +17,7 @@ namespace Hadronium
       parameters.In.LinkAttraction = 10;
       parameters.In.LinkPower = -1;
       parameters.In.StretchAttraction = 0;
+      parameters.In.Gravity = 0;
       parameters.In.Accuracy = 50;
       parameters.In.TimeScale = 1;
       parameters.Out.StepElapsedTime = 0; // in msec
@@ -57,6 +58,7 @@ namespace Hadronium
         public double LinkAttraction;
         public double LinkPower;
         public double StretchAttraction;
+        public double Gravity;
         public double Accuracy;
         public double TimeScale;
       }
