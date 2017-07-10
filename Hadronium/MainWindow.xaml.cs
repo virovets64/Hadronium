@@ -45,17 +45,17 @@ namespace Hadronium
 
     private static PropertyDescription[] modelPropertyDescriptions = new PropertyDescription[] { 
             new PropertyDescription("TimeScale"         ,   1.0, 0.01, 1000.0, new LogarithmicConverter(1), "RealTimeScale"),
-            new PropertyDescription("ParticleAttraction", -30.0, -1E5, 1E5, new BiLogarithmicConverter(20)),
-            new PropertyDescription("LinkAttraction"    ,  10.0, -1E5, 1E5, new BiLogarithmicConverter(20)),
+            new PropertyDescription("ParticleAttraction",  -1.0, -1E3, 1E3, new BiLogarithmicConverter(-1)),
+            new PropertyDescription("LinkAttraction"    ,  10.0, -1E4, 1E4, new BiLogarithmicConverter(10)),
             new PropertyDescription("StretchAttraction" ,   0.0, -1E5, 1E5, new BiLogarithmicConverter(20)),
-            new PropertyDescription("Viscosity"         ,   0.1, 0.0, 1000.0, new LogarithmicConverter(30)),
-            new PropertyDescription("Accuracy"          ,   5.0, 0.1,  1E5, new LogarithmicConverter(1)),
+            new PropertyDescription("Viscosity"         ,    10, 0.0, 1000.0, new LogarithmicConverter(10)),
+            new PropertyDescription("Accuracy"          ,    50,  0.1,  1E5, new LogarithmicConverter(50)),
         };
     private static PropertyDescription[] controlPropertyDescriptions = new PropertyDescription[] { 
             new PropertyDescription("ViewScale"         ,   1.0, 1E-5, 1E5, new LogarithmicConverter(1)),
-            new PropertyDescription("ParticleSize"      ,   8.0, 0.1, 100.0, new LogarithmicConverter(1)),
-            new PropertyDescription("TextSize"          ,   12.0, 0.1, 100.0, new LogarithmicConverter(1)),
-            new PropertyDescription("RefreshPeriod"     ,   0.035, 1E-10, 10.0, new LogarithmicConverter(0.01), "RenderElapsedTime"),
+            new PropertyDescription("ParticleSize"      ,   8.0, 0.8, 800.0, new LogarithmicConverter(8)),
+            new PropertyDescription("TextSize"          ,   12.0, 0.12, 1200.0, new LogarithmicConverter(12)),
+            new PropertyDescription("RefreshPeriod"     ,   0.035, 0.0035, 0.35, new LogarithmicConverter(0.035), "RenderElapsedTime"),
         };
 
     private static PropertyDescription[] modelStatisticsDescriptions = new PropertyDescription[] { 
@@ -92,6 +92,7 @@ namespace Hadronium
           var textBox = new TextBox();
           Binding textBinding = new Binding(x.Name);
           textBinding.Source = source;
+          textBinding.StringFormat = "{0:0.000}";
           textBox.SetBinding(TextBox.TextProperty, textBinding);
           stackPanel.Children.Add(textBox);
 
@@ -108,12 +109,18 @@ namespace Hadronium
             slider.Maximum = 1;
           }
           slider.Orientation = Orientation.Horizontal;
+          slider.TickPlacement = System.Windows.Controls.Primitives.TickPlacement.BottomRight;
+          slider.TickFrequency = 0.5;
+          slider.IsSnapToTickEnabled = false;
 
           Binding sliderBinding = new Binding(x.Name);
           sliderBinding.Converter = x.Converter;
           sliderBinding.Source = source;
           sliderBinding.ConverterParameter = x;
           slider.SetBinding(Slider.ValueProperty, sliderBinding);
+
+          slider.MouseDoubleClick += slider_MouseDoubleClick;
+
           tunePanel.Children.Add(slider);
 
           if (x.FeedbackPropertyName != null)
@@ -127,16 +134,14 @@ namespace Hadronium
             sliderBinding2.Source = source;
             sliderBinding2.ConverterParameter = x;
             slider.SetBinding(Slider.SelectionEndProperty, sliderBinding2);
-
-            //                        model.PropertyChanged +=new System.ComponentModel.PropertyChangedEventHandler(
-            //                            (Object sender, PropertyChangedEventArgs e) => 
-            //                            {
-            ////                                slider.SelectionEnd = x.Converter.Convert(e.
-            //                            });                        
           }
-
         }
       }
+    }
+
+    private void slider_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+      (sender as Slider).Value = 0.5;
     }
 
     private void createTunePanel()
