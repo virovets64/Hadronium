@@ -61,24 +61,30 @@ namespace Hadronium
             new PropertyDescription("RefreshPeriod"     , 0.035, 0.0035, 0.35, new LogarithmicConverter(), "RenderElapsedTime"),
         };
 
-    private static PropertyDescription[] modelStatisticsDescriptions = new PropertyDescription[] { 
+    private static PropertyDescription[] performancePropertyDescriptions = new PropertyDescription[] { 
             new PropertyDescription("StepCount"         ,   1.0, 0.001, 1E5),
             new PropertyDescription("StepElapsedTime"   ,   1.0, 0.001, 1E5,  new LogarithmicConverter()),
             new PropertyDescription("RealTimeScale"     ,   1.0, 0.01, 1000.0, new LogarithmicConverter()),
-        };
-    private static PropertyDescription[] controlStatisticsDescriptions = new PropertyDescription[] { 
-            new PropertyDescription("RenderElapsedTime"  ,   1.0, 1E-10, 1E5,  new LogarithmicConverter()),
+            new PropertyDescription("RenderElapsedTime"  ,   1.0, 1E-10, 1E5,  new LogarithmicConverter())
         };
 
-    private void addControls(object source, PropertyDescription[] propertyDescriptions, bool statistics, Color color)
+    private void addControls(object source, PropertyDescription[] propertyDescriptions, bool statistics, Color color, string header)
     {
+      var expander = new Expander();
+      expander.Header = header;
+      expander.IsExpanded = true;
+      tunePanel.Children.Add(expander);
+      var expanderContent = new StackPanel();
+      expander.Content = expanderContent;
+      expander.Background = new SolidColorBrush(color);
+
       foreach (var x in propertyDescriptions)
       {
         var propertyPanel = new StackPanel();
-        propertyPanel.Margin = new Thickness(0, 0, 0, 4);
-        propertyPanel.Background = new SolidColorBrush(color);
+//        propertyPanel.Margin = new Thickness(0, 0, 0, 4);
         propertyPanel.Orientation = Orientation.Vertical;
-        tunePanel.Children.Add(propertyPanel);
+        propertyPanel.Background = new SolidColorBrush(Colors.White);
+        expanderContent.Children.Add(propertyPanel);
 
         var textPanel = new StackPanel();
         textPanel.Orientation = Orientation.Horizontal;
@@ -165,10 +171,9 @@ namespace Hadronium
       tunePanel.Orientation = Orientation.Vertical;
       controlPanel.Children.Add(tunePanel);
 
-      addControls(model, modelPropertyDescriptions, false, Color.FromRgb(255, 240, 230));
-      addControls(modelControl, controlPropertyDescriptions, false, Color.FromRgb(230, 240, 255));
-      addControls(model, modelStatisticsDescriptions, true, Colors.White);
-      addControls(modelControl, controlStatisticsDescriptions, true, Colors.White);
+      addControls(model, modelPropertyDescriptions, false, Color.FromRgb(255, 240, 230), "Model");
+      addControls(modelControl, controlPropertyDescriptions, false, Color.FromRgb(240, 230, 255), "View");
+      addControls(model, performancePropertyDescriptions, true, Color.FromRgb(230, 255, 240), "Performance");
     }
 
     public MainWindow()

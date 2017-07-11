@@ -40,20 +40,20 @@
         <MenuItem Header="Stop"  Command="{x:Static custom:MainWindow.StopCmd}"/>
       </Menu>
     </WrapPanel>
-    <StackPanel Name="controlPanel" Orientation="Vertical" Width="300" DockPanel.Dock="Right">
-      <StackPanel Orientation="Horizontal"/>
-      <StackPanel Orientation="Horizontal"/>
-      <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Visibility="Collapsed">
-        <Ellipse Name="Wheel" Width="150" Height="150" StrokeThickness="2" Stroke="Blue" MouseDown="Wheel_MouseDown" MouseMove="Wheel_MouseMove" MouseUp="Wheel_MouseUp">
-          <Ellipse.Fill>
-            <RadialGradientBrush Center="0.4,0.4" GradientOrigin="0.4,0.4">
-              <GradientStop Color="Bisque" Offset="0" />
-              <GradientStop Color="Azure" Offset="1" />
-            </RadialGradientBrush>
-          </Ellipse.Fill>
-        </Ellipse>
+    <ScrollViewer Width="300" DockPanel.Dock="Right">
+      <StackPanel Name="controlPanel" Orientation="Vertical">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Visibility="Collapsed">
+          <Ellipse Name="Wheel" Width="150" Height="150" StrokeThickness="2" Stroke="Blue" MouseDown="Wheel_MouseDown" MouseMove="Wheel_MouseMove" MouseUp="Wheel_MouseUp">
+            <Ellipse.Fill>
+              <RadialGradientBrush Center="0.4,0.4" GradientOrigin="0.4,0.4">
+                <GradientStop Color="Bisque" Offset="0" />
+                <GradientStop Color="Azure" Offset="1" />
+              </RadialGradientBrush>
+            </Ellipse.Fill>
+          </Ellipse>
+        </StackPanel>
       </StackPanel>
-    </StackPanel>
+    </ScrollViewer>
     <ContentControl Name="modelPlaceholder"/>
   </DockPanel>
 </Window>
