@@ -199,7 +199,8 @@ namespace Hadronium
       SelectRectangle
     }
     private ToolKind toolKind = ToolKind.None;
-    private Point savedMousePosition;
+    private Point mouseDownPosition;
+    private Point mouseCurrentPosition;
     //        private Stopwatch dragStopwatch = new Stopwatch();
     private Stopwatch renderStopwatch = new Stopwatch();
     private DispatcherTimer myTimer = null;
@@ -384,6 +385,13 @@ namespace Hadronium
         }
       }
 
+      if(toolKind == ToolKind.SelectRectangle)
+      {
+        var rect = new Rect(mouseDownPosition, mouseCurrentPosition);
+        var pen = new Pen(Brushes.Black, 1);
+        pen.DashStyle = DashStyles.Dash;
+        drawingContext.DrawRectangle(null, pen, rect);
+      }
       RenderElapsedTime = renderStopwatch.Elapsed.TotalSeconds;
       renderStopwatch.Restart();
     }
@@ -401,9 +409,9 @@ namespace Hadronium
       {
         case MouseButton.Left:
           Point p = e.GetPosition(this);
-          savedMousePosition = p;
+          mouseDownPosition = p;
           int particleIndex = indexOfPoint(p);
-          if (Keyboard.IsKeyDown(Key.LeftCtrl))
+          if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.LeftShift))
           {
             if (particleIndex != -1) 
             {
@@ -415,7 +423,7 @@ namespace Hadronium
             else
               toolKind = ToolKind.SelectRectangle;
           }
-          else // Ctrl is not pressed
+          else
           {
             if (particleIndex != -1)  
             {
@@ -451,7 +459,8 @@ namespace Hadronium
     protected override void OnMouseMove(MouseEventArgs e)
     {
       Point p = e.GetPosition(this);
-      var moveBy = ToWorldCoord(p - savedMousePosition);
+      mouseCurrentPosition = p;
+      var moveBy = ToWorldCoord(p - mouseDownPosition);
       switch (toolKind)
       {
         case ToolKind.MoveSelectedParticles:
@@ -466,15 +475,16 @@ namespace Hadronium
           }
           // dragStopwatch.Restart();
           model.Refresh();
-          savedMousePosition = p;
+          mouseDownPosition = p;
           InvalidateVisual();
           break;
         case ToolKind.ScrollView:
-          Offset += (p - savedMousePosition);
-          savedMousePosition = p;
+          Offset += (p - mouseDownPosition);
+          mouseDownPosition = p;
           InvalidateVisual();
           break;
         case ToolKind.SelectRectangle:
+          InvalidateVisual();
           break;
       }
     }
@@ -499,7 +509,7 @@ namespace Hadronium
         case ToolKind.ScrollView:
           break;
         case ToolKind.SelectRectangle:
-          var r = ToWorldCoord(new Rect(savedMousePosition, e.GetPosition(this)));
+          var r = ToWorldCoord(new Rect(mouseDownPosition, e.GetPosition(this)));
 #if Model3D
                     r.Z = double.NegativeInfinity;
                     r.SizeZ = double.PositiveInfinity;
