@@ -141,22 +141,27 @@ namespace Hadronium
       return bmp;
     }
 
+    Random random = new Random();
+
+    private Color getRandomColor()
+    {
+      Color color = new Color();
+      Byte[] bytes = new Byte[3];
+      random.NextBytes(bytes);
+      color.R = bytes[0];
+      color.G = bytes[1];
+      color.B = bytes[2];
+      color.A = 0xFF;
+      return color;
+    }
+
     public void NewRandomModel(int particleCount, int linkCount)
     {
       model.AddRandomParticles(particleCount, linkCount, getInitialRect());
 
-      Random random = new Random();
-      for (int i = 0; i < model.Particles.Count; i++)
+      foreach (var p in model.Particles)
       {
-        Color color = new Color();
-        Byte[] bytes = new Byte[3];
-        random.NextBytes(bytes);
-        color.R = bytes[0];
-        color.G = bytes[1];
-        color.B = bytes[2];
-        color.A = 0xFF;
-        model.Particles[i].FillColor = color;
-        model.Particles[i].StrokeColor = Colors.Transparent;
+        p.FillColor = getRandomColor();
       }
       InvalidateVisual();
     }
@@ -238,11 +243,6 @@ namespace Hadronium
     }
 
 
-    //static ModelControl()
-    //{
-    //    DefaultStyleKeyProperty.OverrideMetadata(typeof(ModelControl), new FrameworkPropertyMetadata(typeof(ModelControl)));
-    //}
-
     private PathGeometry pinImage;
 
     private void createPinImage()
@@ -267,7 +267,10 @@ namespace Hadronium
       myTimer = new DispatcherTimer(new TimeSpan((long)(refreshPeriod * 10000)), DispatcherPriority.SystemIdle, timerProc, Dispatcher);
       calcTransforms();
       createPinImage();
+
     }
+
+    SelectionAdorner selectionAdorner;
 
 
 #if Model3D
@@ -322,16 +325,16 @@ namespace Hadronium
       }
     }
 
-    private int indexOfPoint(Point p)
+    private Particle particleAtPoint(Point p)
     {
       for (int i = model.Particles.Count - 1; i >= 0; i--)
       {
         Particle particle = model.Particles[i];
         Vector v = ToScreenCoord(particle.Position) - p;
         if (v.Length <= ParticleSize / 2 + 4)
-          return i;
+          return particle;
       }
-      return -1;
+      return null;
     }
 
     private void updateFontSize()
@@ -403,13 +406,6 @@ namespace Hadronium
         }
       }
 
-      if(toolKind == ToolKind.SelectRectangle)
-      {
-        var rect = new Rect(mouseDownPosition, mouseCurrentPosition);
-        var pen = new Pen(Brushes.Black, 1);
-        pen.DashStyle = DashStyles.Dash;
-        drawingContext.DrawRectangle(null, pen, rect);
-      }
       RenderElapsedTime = renderStopwatch.Elapsed.TotalSeconds;
       renderStopwatch.Restart();
     }
@@ -428,25 +424,45 @@ namespace Hadronium
         case MouseButton.Left:
           Point p = e.GetPosition(this);
           mouseDownPosition = p;
-          int particleIndex = indexOfPoint(p);
-          if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.LeftShift))
+          var hitParticle = particleAtPoint(p);
+          if(Keyboard.IsKeyDown(Key.LeftCtrl))
           {
-            if (particleIndex != -1) 
+            if(hitParticle == null)
+            {
+              var newParticle = new Particle();
+              newParticle.Position = ToWorldCoord(mouseDownPosition);
+              newParticle.FillColor = getRandomColor();
+              model.Particles.Add(newParticle);
+              InvalidateVisual();
+            }
+            else
+            {
+
+            }
+          }
+          else if(Keyboard.IsKeyDown(Key.LeftShift))
+          {
+            if (hitParticle != null) 
             {
               toolKind = ToolKind.None;
-              var drawData = model.Particles[particleIndex].Tag as DrawData;
+              var drawData = hitParticle.Tag as DrawData;
               drawData.Selected = !drawData.Selected;
               InvalidateVisual();
             }
             else
+            {
               toolKind = ToolKind.SelectRectangle;
+              selectionAdorner = SelectionAdorner.Create(this);
+              selectionAdorner.From = mouseDownPosition;
+              selectionAdorner.To = mouseDownPosition;
+            }
           }
           else
           {
-            if (particleIndex != -1)  
+            if (hitParticle != null)  
             {
               toolKind = ToolKind.MoveSelectedParticles;
-              var drawData = model.Particles[particleIndex].Tag as DrawData;
+              var drawData = hitParticle.Tag as DrawData;
               if (drawData.Selected)
               {
                 foreach (var particle in model.Particles)
@@ -460,8 +476,8 @@ namespace Hadronium
               {
                 foreach (var particle in model.Particles)
                   (particle.Tag as DrawData).Selected = false;
-                (model.Particles[particleIndex].Tag as DrawData).Selected = true;
-                model.Particles[particleIndex].Fixed = true;
+                (hitParticle.Tag as DrawData).Selected = true;
+                hitParticle.Fixed = true;
               }
               InvalidateVisual();
             }
@@ -502,7 +518,7 @@ namespace Hadronium
           InvalidateVisual();
           break;
         case ToolKind.SelectRectangle:
-          InvalidateVisual();
+          selectionAdorner.To = mouseCurrentPosition;
           break;
       }
     }
@@ -537,6 +553,8 @@ namespace Hadronium
             if (r.Contains(particle.Position))
               (particle.Tag as DrawData).Selected = true;
           }
+          selectionAdorner.Destroy();
+          selectionAdorner = null;
           break;
       }
       InvalidateVisual();

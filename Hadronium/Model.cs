@@ -42,7 +42,7 @@ namespace Hadronium
       Mass = 1;
       Fixed = false;
       FillColor = Color.FromRgb(100, 200, 100);
-      StrokeColor = Color.FromRgb(0, 0, 0);
+      StrokeColor = Colors.Transparent;
     }
 #if Model3D
         public Point3D Position;

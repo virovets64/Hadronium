@@ -61,6 +61,7 @@
       <DependentUpon>ParticleGenerationDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="PropertyDescription.cs" />
+    <Compile Include="SelectionAdorner.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
