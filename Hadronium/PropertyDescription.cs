@@ -102,8 +102,8 @@ namespace Hadronium
       if (exponent == null)
       {
         var pd = parameter as PropertyDescription;
-        exponent = new Exponent((double)pd.DefaultValue, (double)pd.Maximum, quarter);
-        y0 = (double)pd.DefaultValue;
+        y0 = ((double)pd.Maximum + (double)pd.Minimum) / 2;
+        exponent = new Exponent(y0, (double)pd.Maximum, quarter);
       }
     }
 

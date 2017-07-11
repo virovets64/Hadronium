@@ -45,8 +45,8 @@ namespace Hadronium
 
     private static PropertyDescription[] modelPropertyDescriptions = new PropertyDescription[] { 
             new PropertyDescription("TimeScale"         ,   1.0, 0.01, 1000.0, new LogarithmicConverter(), "RealTimeScale"),
-            new PropertyDescription("ParticleAttraction",  -1.0, -1E3, 1E3, new BiLogarithmicConverter(0)),
-            new PropertyDescription("LinkAttraction"    ,  10.0, -1E4, 1E4, new BiLogarithmicConverter(20)),
+            new PropertyDescription("ParticleAttraction",  -1.0, -1E3, 1E3, new BiLogarithmicConverter(1)),
+            new PropertyDescription("LinkAttraction"    ,  10.0, -1E4, 1E4, new BiLogarithmicConverter(10)),
             new PropertyDescription("StretchAttraction" ,   0.0, -1E4, 1E4, new BiLogarithmicConverter(1)),
             new PropertyDescription("Gravity"           ,   0.0, -1E3, 1E3, new BiLogarithmicConverter(1)),
             new PropertyDescription("Viscosity"         ,  10.0,  0.0, 1000.0, new LogarithmicConverter()),
@@ -68,17 +68,23 @@ namespace Hadronium
             new PropertyDescription("RenderElapsedTime"  ,   1.0, 1E-10, 1E5,  new LogarithmicConverter()),
         };
 
-    private void addControls(object source, PropertyDescription[] propertyDescriptions, bool statistics)
+    private void addControls(object source, PropertyDescription[] propertyDescriptions, bool statistics, Color color)
     {
       foreach (var x in propertyDescriptions)
       {
-        var stackPanel = new StackPanel();
-        stackPanel.Orientation = Orientation.Horizontal;
-        tunePanel.Children.Add(stackPanel);
+        var propertyPanel = new StackPanel();
+        propertyPanel.Margin = new Thickness(0, 0, 0, 4);
+        propertyPanel.Background = new SolidColorBrush(color);
+        propertyPanel.Orientation = Orientation.Vertical;
+        tunePanel.Children.Add(propertyPanel);
+
+        var textPanel = new StackPanel();
+        textPanel.Orientation = Orientation.Horizontal;
+        propertyPanel.Children.Add(textPanel);
 
         var label = new Label();
         label.Content = x.Name;
-        stackPanel.Children.Add(label);
+        textPanel.Children.Add(label);
 
         if (statistics)
         {
@@ -86,7 +92,7 @@ namespace Hadronium
           Binding textBinding = new Binding(x.Name);
           textBinding.Source = source;
           label2.SetBinding(Label.ContentProperty, textBinding);
-          stackPanel.Children.Add(label2);
+          textPanel.Children.Add(label2);
         }
         else
         {
@@ -95,7 +101,7 @@ namespace Hadronium
           textBinding.Source = source;
           textBinding.StringFormat = "{0:0.000}";
           textBox.SetBinding(TextBox.TextProperty, textBinding);
-          stackPanel.Children.Add(textBox);
+          textPanel.Children.Add(textBox);
 
           var slider = new Slider();
           slider.Tag = x;
@@ -110,9 +116,9 @@ namespace Hadronium
             slider.Maximum = 1;
           }
           slider.Orientation = Orientation.Horizontal;
-          slider.TickPlacement = System.Windows.Controls.Primitives.TickPlacement.BottomRight;
-          slider.TickFrequency = 0.5;
-          slider.IsSnapToTickEnabled = false;
+//          slider.TickPlacement = System.Windows.Controls.Primitives.TickPlacement.BottomRight;
+          //slider.TickFrequency = 0.5;
+          //slider.IsSnapToTickEnabled = false;
 
           Binding sliderBinding = new Binding(x.Name);
           sliderBinding.Converter = x.Converter;
@@ -122,7 +128,7 @@ namespace Hadronium
 
           slider.MouseDoubleClick += slider_MouseDoubleClick;
 
-          tunePanel.Children.Add(slider);
+          propertyPanel.Children.Add(slider);
 
           if (x.FeedbackPropertyName != null)
           {
@@ -142,7 +148,11 @@ namespace Hadronium
 
     private void slider_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
-      (sender as Slider).Value = 0.5;
+      var slider = sender as Slider;
+      Binding binding = slider.GetBindingExpression(Slider.ValueProperty).ParentBinding;
+      var propDescr = binding.ConverterParameter as PropertyDescription;
+      var value = binding.Converter.Convert(propDescr.DefaultValue, typeof(double), propDescr, CultureInfo.InvariantCulture);
+      (sender as Slider).Value = (double)value;
     }
 
     private void createTunePanel()
@@ -153,10 +163,10 @@ namespace Hadronium
       tunePanel.Orientation = Orientation.Vertical;
       controlPanel.Children.Add(tunePanel);
 
-      addControls(modelControl, controlPropertyDescriptions, false);
-      addControls(model, modelPropertyDescriptions, false);
-      addControls(model, modelStatisticsDescriptions, true);
-      addControls(modelControl, controlStatisticsDescriptions, true);
+      addControls(model, modelPropertyDescriptions, false, Color.FromRgb(255, 240, 230));
+      addControls(modelControl, controlPropertyDescriptions, false, Color.FromRgb(230, 240, 255));
+      addControls(model, modelStatisticsDescriptions, true, Colors.White);
+      addControls(modelControl, controlStatisticsDescriptions, true, Colors.White);
     }
 
     public MainWindow()
