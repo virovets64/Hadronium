@@ -1,0 +1,4 @@
+*.VC.opendb
+*.VC.db
+*.VC.db-shm
+*.VC.db-wal
