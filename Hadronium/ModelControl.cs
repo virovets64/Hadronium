@@ -143,11 +143,7 @@ namespace Hadronium
       InvalidateVisual();
     }
 
-
-    public void LoadProjectsXml()
-    {
-    }
-
+    
     private double refreshPeriod = 0.035;
     private const int PixelsPerMeter = 500;
     private const double RotationSpeed = 1;

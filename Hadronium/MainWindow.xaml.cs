@@ -214,15 +214,6 @@ namespace Hadronium
     {
       e.CanExecute = !model.Active;
     }
-    private void LoadCmdExecuted(object sender, ExecutedRoutedEventArgs e)
-    {
-      modelControl.LoadProjectsXml();
-      modelRecreated();
-    }
-    private void LoadCmdCanExecute(object sender, CanExecuteRoutedEventArgs e)
-    {
-      e.CanExecute = !model.Active;
-    }
     private void AddParticlesCmdExecuted(object sender, ExecutedRoutedEventArgs e)
     {
       var dialog = new ParticleGenerationDialog();

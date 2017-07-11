@@ -5,7 +5,6 @@
         Title="Hadronium" Width="800" Height="600" Closing="Window_Closing">
   <Window.CommandBindings>
     <CommandBinding Command="{x:Static custom:MainWindow.NewCmd}" Executed="NewCmdExecuted" CanExecute="NewCmdCanExecute" />
-    <CommandBinding Command="{x:Static custom:MainWindow.LoadCmd}" Executed="LoadCmdExecuted" CanExecute="LoadCmdCanExecute" />
     <CommandBinding Command="{x:Static custom:MainWindow.RandomizeCmd}" Executed="RandomizeCmdExecuted" CanExecute="RandomizeCmdCanExecute" />
     <CommandBinding Command="{x:Static custom:MainWindow.AddParticlesCmd}" Executed="AddParticlesCmdExecuted" CanExecute="AddParticlesCmdCanExecute" />
     <CommandBinding Command="{x:Static custom:MainWindow.StartCmd}" Executed="StartCmdExecuted" CanExecute="StartCmdCanExecute" />
