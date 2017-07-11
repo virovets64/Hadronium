@@ -110,28 +110,20 @@ namespace Hadronium
 
     public void Link(bool value)
     {
-      var selectedPartices = model.Particles.Where(x => (x.Tag as DrawData).Selected);
-      foreach (var particle1 in selectedPartices)
-      {
-        foreach (var particle2 in selectedPartices)
-        {
-          if(particle1 != particle2)
-          {
-          }
-        }
-      }
+      var selectedPartices = model.Particles.Where(x => (x.Tag as DrawData).Selected).ToList();
+      foreach (var p1 in selectedPartices)
+        foreach (var p2 in selectedPartices)
+          if (p1 != p2)
+            if(value)
+              model.AddLink(p1, p2);
+            else
+              model.RemoveLink(p1, p2);
       InvalidateVisual();
     }
 
     public bool CanLink(bool value)
     {
-      foreach (var particle in model.Particles)
-      {
-        DrawData drawData = particle.Tag as DrawData;
-        if (drawData.Selected && drawData.Pinned != value)
-          return true;
-      }
-      return false;
+      return !model.Active;
     }
 
     public RenderTargetBitmap RenderToBitmap()

@@ -355,17 +355,30 @@ namespace Hadronium
     }
 #endif
 
+    private Link findLink(Particle a, Particle b)
+    {
+      foreach (var l in Links)
+        if (l.A == a && l.B == b || l.A == b && l.B == a)
+          return l;
+      return null;
+    }
 
-    private bool AddLink(Particle a, Particle b)
+    public bool AddLink(Particle a, Particle b)
     {
       if (a == b)
         return false;
-      foreach (var l in Links)
-      {
-        if (l.A == a && l.B == b || l.A == b && l.B == a)
-          return false;
-      }
+      if(findLink(a, b) != null)
+        return false;
       Links.Add(new Link(a, b));
+      return true;
+    }
+
+    public bool RemoveLink(Particle a, Particle b)
+    {
+      var link = findLink(a, b);
+      if(link == null)
+        return false;
+      Links.Remove(link);
       return true;
     }
 
