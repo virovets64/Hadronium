@@ -42,6 +42,8 @@ namespace Hadronium
     public static RoutedCommand StopCmd = new RoutedCommand();
     public static RoutedCommand PinCmd = new RoutedCommand();
     public static RoutedCommand UnpinCmd = new RoutedCommand();
+    public static RoutedCommand LinkCmd = new RoutedCommand();
+    public static RoutedCommand UnlinkCmd = new RoutedCommand();
 
     private static PropertyDescription[] modelPropertyDescriptions = new PropertyDescription[] { 
             new PropertyDescription("TimeScale"         ,   1.0, 0.01, 1000.0, new LogarithmicConverter(), "RealTimeScale"),
@@ -315,12 +317,12 @@ namespace Hadronium
       write(result, "StrokeColor", value.StrokeColor);
       return result;
     }
-    private void writeParticleRef(XmlNode node, string name, Model model, int index)
+    private void writeParticleRef(XmlNode node, string name, Model model, Particle particle)
     {
-      if (model.Particles[index].Name != null && model.Particles[index].Name != "")
-        write(node, name + ".Name", model.Particles[index].Name);
+      if (!String.IsNullOrEmpty(particle.Name))
+        write(node, name + ".Name", particle.Name);
       else
-        write(node, name + ".Number", index.ToString());
+        write(node, name + ".Number", model.GetParticleIndex(particle).ToString());
     }
     private XmlNode write(XmlNode node, PropertyDescription prop, object target)
     {
@@ -429,14 +431,14 @@ namespace Hadronium
       read(node.SelectSingleNode("StrokeColor"), ref result.StrokeColor);
       return result;
     }
-    private int readParticleRef(XmlNode node, string name, Model model)
+    private Particle readParticleRef(XmlNode node, string name, Model model)
     {
       var attr = node.Attributes[name + ".Name"];
       if (attr != null)
-        return model.GetParticleIndex(attr.Value);
+        return model.GetParticle(attr.Value);
       attr = node.Attributes[name + ".Number"];
       if (attr != null)
-        return int.Parse(attr.Value);
+        return model.Particles[int.Parse(attr.Value)];
       throw new Exception("Link read error");
     }
     private void read(XmlNode node, PropertyDescription prop, object target)
@@ -462,10 +464,10 @@ namespace Hadronium
         read(rootNode, prop, modelControl);
       foreach (XmlNode linkNode in rootNode.SelectNodes("Link"))
       {
-        var link = new Link();
-        link.A = readParticleRef(linkNode, "A", model);
-        link.B = readParticleRef(linkNode, "B", model);
-        link.Strength = double.Parse(read(linkNode, "Strength", "1"));
+        var link = new Link(
+          readParticleRef(linkNode, "A", model), 
+          readParticleRef(linkNode, "B", model), 
+          double.Parse(read(linkNode, "Strength", "1")));
         model.Links.Add(link);
       }
     }
@@ -488,17 +490,16 @@ namespace Hadronium
           string[] items = line.Split('\t');
           if (items.Length > 0)
           {
-            int index = model.FindParticleIndex(items[0]);
-            if (index == -1)
+            var particle = model.FindParticle(items[0]);
+            if (particle == null)
             {
-              var p = new Particle();
-              p.Name = items[0];
-              model.Particles.Add(p);
-              index = model.Particles.Count - 1;
+              particle = new Particle();
+              particle.Name = items[0];
+              model.Particles.Add(particle);
             }
             if (items.Length > 1)
             {
-              var link = new Link(index, model.GetParticleIndex(items[1]));
+              var link = new Link(particle, model.GetParticle(items[1]));
               model.Links.Add(link);
             }
           }
@@ -628,7 +629,6 @@ namespace Hadronium
     {
       e.CanExecute = modelControl != null && modelControl.CanPin(true);
     }
-
     private void UnpinCmd_Executed(object sender, ExecutedRoutedEventArgs e)
     {
       modelControl.Pin(false);
@@ -637,6 +637,26 @@ namespace Hadronium
     private void UnpinCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
     {
       e.CanExecute = modelControl != null && modelControl.CanPin(false);
+    }
+
+    private void LinkCmd_Executed(object sender, ExecutedRoutedEventArgs e)
+    {
+      modelControl.Link(true);
+    }
+
+    private void LinkCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+    {
+      e.CanExecute = modelControl != null && modelControl.CanLink(true);
+    }
+
+    private void UnlinkCmd_Executed(object sender, ExecutedRoutedEventArgs e)
+    {
+      modelControl.Link(false);
+    }
+
+    private void UnlinkCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+    {
+      e.CanExecute = modelControl != null && modelControl.CanLink(false);
     }
 
   }

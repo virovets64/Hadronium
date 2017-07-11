@@ -6,7 +6,6 @@ using System.Windows.Media;
 using System.Windows.Media.Media3D;
 #endif
 using System.ComponentModel;
-using System.Runtime.InteropServices;
 
 namespace Hadronium
 {
@@ -61,17 +60,16 @@ namespace Hadronium
 
   }
 
-  [StructLayout(LayoutKind.Sequential)]
-  public struct Link
+  public class Link
   {
-    public Link(int a, int b, double strength = 1)
+    public Link(Particle a, Particle b, double strength = 1)
     {
       A = a;
       B = b;
       Strength = strength;
     }
-    public int A;
-    public int B;
+    public Particle A;
+    public Particle B;
     public double Strength;
   }
 
@@ -82,20 +80,26 @@ namespace Hadronium
     {
     }
 
-    public int FindParticleIndex(string name)
+    public Particle FindParticle(string name)
     {
-      for (int i = 0; i < Particles.Count; i++)
+      foreach (var p in Particles)
       {
-        if (Particles[i].Name == name)
-          return i;
+        if (p.Name == name)
+          return p;
       }
-      return -1;
+      return null;
     }
-    public int GetParticleIndex(string name)
+
+    public Particle GetParticle(string name)
     {
-      int result = FindParticleIndex(name);
+      return Particles.Find(x => x.Name == name);
+    }
+
+    public int GetParticleIndex(Particle p)
+    {
+      int result = Particles.IndexOf(p); 
       if (result == -1)
-        throw new Exception("Threr is no particle with name " + name);
+        throw new Exception("Particle is not found");
       return result;
     }
 
@@ -212,13 +216,20 @@ namespace Hadronium
       {
         engine.particles = new Engine.Particle[Particles.Count];
         engine.particleInfos = new Engine.ParticleInfo[Particles.Count];
+        engine.links = new Engine.Link[Links.Count];
         for (int i = 0; i < Particles.Count; i++)
         {
           engine.particles[i].Position = Particles[i].Position;
           engine.particles[i].Velocity = Particles[i].Velocity;
           engine.particleInfos[i].Mass = Particles[i].Mass;
         }
-        engine.Start(Links.ToArray());
+        for (int i = 0; i < Links.Count; i++)
+        {
+          engine.links[i].A = GetParticleIndex(Links[i].A);
+          engine.links[i].B = GetParticleIndex(Links[i].B);
+          engine.links[i].Strength = Links[i].Strength;
+        }
+        engine.Start();
       }
     }
 
@@ -255,9 +266,9 @@ namespace Hadronium
       Particles.AddRange(newParticles);
       for (int i = 0; i < linkCount; )
       {
-        int nA = firstNewParticleIndex + random.Next(particleCount);
-        int nB = firstNewParticleIndex + random.Next(particleCount);
-        if (AddLink(nA, nB))
+        var a = newParticles[random.Next(particleCount)];
+        var b = newParticles[random.Next(particleCount)];
+        if (AddLink(a, b))
           i++;
       }
     }
@@ -345,7 +356,7 @@ namespace Hadronium
 #endif
 
 
-    private bool AddLink(int a, int b)
+    private bool AddLink(Particle a, Particle b)
     {
       if (a == b)
         return false;

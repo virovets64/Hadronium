@@ -37,6 +37,15 @@ namespace Hadronium
 #endif
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    public struct Link
+    {
+      public int A;
+      public int B;
+      public double Strength;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
     public struct ParticleInfo
     {
       public double Mass;
@@ -45,6 +54,7 @@ namespace Hadronium
 
     public Particle[] particles;
     public ParticleInfo[] particleInfos;
+    public Link[] links;
 
     [StructLayout(LayoutKind.Sequential)]
     public struct Parameters
@@ -77,7 +87,7 @@ namespace Hadronium
 
     private IntPtr handle = IntPtr.Zero;
     
-    public void Start(Link[] links)
+    public void Start()
     {
       handle = EngineStart(ref parameters, particles.Length, particles, particleInfos, links.Length, links);
     }

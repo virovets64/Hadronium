@@ -108,6 +108,32 @@ namespace Hadronium
       return false;
     }
 
+    public void Link(bool value)
+    {
+      var selectedPartices = model.Particles.Where(x => (x.Tag as DrawData).Selected);
+      foreach (var particle1 in selectedPartices)
+      {
+        foreach (var particle2 in selectedPartices)
+        {
+          if(particle1 != particle2)
+          {
+          }
+        }
+      }
+      InvalidateVisual();
+    }
+
+    public bool CanLink(bool value)
+    {
+      foreach (var particle in model.Particles)
+      {
+        DrawData drawData = particle.Tag as DrawData;
+        if (drawData.Selected && drawData.Pinned != value)
+          return true;
+      }
+      return false;
+    }
+
     public RenderTargetBitmap RenderToBitmap()
     {
 
@@ -339,9 +365,9 @@ namespace Hadronium
       Pen fixedPen = new Pen(Brushes.Black, 1);
       foreach (var link in model.Links)
       {
-        drawingContext.DrawLine(model.Particles[link.A].Position.X < model.Particles[link.B].Position.X ? forwardPen : backwardPen,
-            ToScreenCoord(model.Particles[link.A].Position),
-            ToScreenCoord(model.Particles[link.B].Position));
+        drawingContext.DrawLine(link.A.Position.X < link.B.Position.X ? forwardPen : backwardPen,
+            ToScreenCoord(link.A.Position),
+            ToScreenCoord(link.B.Position));
       }
       foreach (var particle in model.Particles)
       {

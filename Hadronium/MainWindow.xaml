@@ -11,6 +11,8 @@
     <CommandBinding Command="{x:Static custom:MainWindow.StopCmd}" Executed="StopCmdExecuted" CanExecute="StopCmdCanExecute" />
     <CommandBinding Command="{x:Static custom:MainWindow.PinCmd}" Executed="PinCmd_Executed" CanExecute="PinCmd_CanExecute" />
     <CommandBinding Command="{x:Static custom:MainWindow.UnpinCmd}" CanExecute="UnpinCmd_CanExecute" Executed="UnpinCmd_Executed" />
+    <CommandBinding Command="{x:Static custom:MainWindow.LinkCmd}" Executed="LinkCmd_Executed" CanExecute="LinkCmd_CanExecute" />
+    <CommandBinding Command="{x:Static custom:MainWindow.UnlinkCmd}" CanExecute="UnlinkCmd_CanExecute" Executed="UnlinkCmd_Executed" />
     <CommandBinding Command="Open" Executed="OpenCmdExecuted" />
     <CommandBinding Command="Save" Executed="SaveCmdExecuted" />
   </Window.CommandBindings>
@@ -27,6 +29,9 @@
           <MenuItem Header="Add particles..." Command="{x:Static custom:MainWindow.AddParticlesCmd}"/>
           <MenuItem Header="Randomize particle positions" Command="{x:Static custom:MainWindow.RandomizeCmd}"/>
         </MenuItem>
+        <Separator/>
+        <MenuItem Header="Link" Command="{x:Static custom:MainWindow.LinkCmd}"/>
+        <MenuItem Header="Unlink"  Command="{x:Static custom:MainWindow.UnlinkCmd}"/>
         <Separator/>
         <MenuItem Header="Pin" Command="{x:Static custom:MainWindow.PinCmd}"/>
         <MenuItem Header="Unpin"  Command="{x:Static custom:MainWindow.UnpinCmd}"/>
