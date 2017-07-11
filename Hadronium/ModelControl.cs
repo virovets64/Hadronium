@@ -309,7 +309,7 @@ namespace Hadronium
       {
         Particle particle = model.Particles[i];
         Vector v = ToScreenCoord(particle.Position) - p;
-        if (v.Length <= ParticleSize / 2)
+        if (v.Length <= ParticleSize / 2 + 4)
           return i;
       }
       return -1;
@@ -405,7 +405,7 @@ namespace Hadronium
           int particleIndex = indexOfPoint(p);
           if (Keyboard.IsKeyDown(Key.LeftCtrl))
           {
-            if (particleIndex != -1) // ткнули в частицу - переключаем Selected
+            if (particleIndex != -1) 
             {
               toolKind = ToolKind.None;
               var drawData = model.Particles[particleIndex].Tag as DrawData;
@@ -415,9 +415,9 @@ namespace Hadronium
             else
               toolKind = ToolKind.SelectRectangle;
           }
-          else // Ctrl не нажат
+          else // Ctrl is not pressed
           {
-            if (particleIndex != -1)  // ткнули в частицу
+            if (particleIndex != -1)  
             {
               toolKind = ToolKind.MoveSelectedParticles;
               var drawData = model.Particles[particleIndex].Tag as DrawData;
