@@ -382,6 +382,11 @@ namespace Hadronium
       return true;
     }
 
+    public void RemoveParticle(Particle p)
+    {
+      Links.RemoveAll(x => x.A == p || x.B == p);
+      Particles.Remove(p);
+    }
 
     unsafe public void Refresh()
     {

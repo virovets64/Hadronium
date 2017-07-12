@@ -437,7 +437,8 @@ namespace Hadronium
             }
             else
             {
-
+              model.RemoveParticle(hitParticle);
+              InvalidateVisual();
             }
           }
           else if(Keyboard.IsKeyDown(Key.LeftShift))
