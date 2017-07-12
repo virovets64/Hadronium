@@ -80,6 +80,12 @@ namespace Hadronium
     {
     }
 
+    private int dimension = 2;
+    public int Dimension 
+    {
+      get { return dimension; }
+    }
+
     public Particle FindParticle(string name)
     {
       foreach (var p in Particles)

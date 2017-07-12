@@ -26,18 +26,6 @@ namespace Hadronium
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct Particle
-    {
-#if Model3D
-      public Point3D Position;
-      public Vector3D Velocity;
-#else
-      public Point Position;
-      public Vector Velocity;
-#endif
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
     public struct Link
     {
       public int A;
@@ -52,7 +40,7 @@ namespace Hadronium
       public bool Fixed;
     }
 
-    private Particle[] particles;
+    private double[] particleData;
     private ParticleInfo[] particleInfos;
     private Link[] links;
 
@@ -89,15 +77,20 @@ namespace Hadronium
     
     public void Start(Model model)
     {
-      particles = new Particle[model.Particles.Count];
+      particleData = new double[model.Particles.Count * model.Dimension * 2];
       particleInfos = new ParticleInfo[model.Particles.Count];
       links = new Link[model.Links.Count];
-      for (int i = 0; i < model.Particles.Count; i++)
+      int pIndex = 0;
+      foreach(var particle in model.Particles)
       {
-        particles[i].Position = model.Particles[i].Position;
-        particles[i].Velocity = model.Particles[i].Velocity;
-        particleInfos[i].Mass = model.Particles[i].Mass;
+        particleData[pIndex++] = particle.Position.X;
+        particleData[pIndex++] = particle.Position.Y;
+        particleData[pIndex++] = particle.Velocity.X;
+        particleData[pIndex++] = particle.Velocity.Y;
       }
+      for (int i = 0; i < model.Particles.Count; i++)
+        particleInfos[i].Mass = model.Particles[i].Mass;
+
       for (int i = 0; i < model.Links.Count; i++)
       {
         links[i].A = model.GetParticleIndex(model.Links[i].A);
@@ -105,7 +98,7 @@ namespace Hadronium
         links[i].Strength = model.Links[i].Strength;
       }
 
-      handle = EngineStart(ref parameters, particles.Length, particles, particleInfos, links.Length, links);
+      handle = EngineStart(ref parameters, particleData.Length, particleData, particleInfos.Length, particleInfos, links.Length, links);
     }
 
     public void Stop()
@@ -126,45 +119,59 @@ namespace Hadronium
 
     public void Sync(Model model)
     {
-      for (int i = 0; i < particles.Length; i++)
-      {
+      for (int i = 0; i < model.Particles.Count; i++)
         particleInfos[i].Fixed = model.Particles[i].Fixed;
-        if (model.Particles[i].Fixed)
+
+      int pIndex = 0;
+      foreach (var particle in model.Particles)
+      {
+        if (particle.Fixed)
         {
-          particles[i].Position = model.Particles[i].Position;
-          particles[i].Velocity = model.Particles[i].Velocity;
+          particleData[pIndex++] = particle.Position.X;
+          particleData[pIndex++] = particle.Position.Y;
+          particleData[pIndex++] = particle.Velocity.X;
+          particleData[pIndex++] = particle.Velocity.Y;
         }
+        else
+          pIndex += model.Dimension * 2;
       }
 
-      EngineSync(handle, ref parameters, particles.Length, ref particles, particleInfos);
+      EngineSync(handle, ref parameters, particleData.Length, ref particleData, particleInfos.Length, particleInfos);
 
-      for (int i = 0; i < particles.Length; i++)
+      pIndex = 0;
+      foreach (var particle in model.Particles)
       {
-        if (!model.Particles[i].Fixed)
+        if (!particle.Fixed)
         {
-          model.Particles[i].Position = particles[i].Position;
-          model.Particles[i].Velocity = particles[i].Velocity;
+          particle.Position.X = particleData[pIndex++];
+          particle.Position.Y = particleData[pIndex++];
+          particle.Velocity.X = particleData[pIndex++];
+          particle.Velocity.Y = particleData[pIndex++];
         }
+        else
+          pIndex += model.Dimension * 2;
       }
     }
 
     [DllImport("Engine.dll", CallingConvention = CallingConvention.Cdecl)]
     static extern IntPtr EngineStart(
         ref Parameters parameters,
-        long particleCount,
-        [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] Particle[] particles,
-        [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] ParticleInfo[] particleInfos,
+        long particleDataSize,
+        [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] double[] particleData,
+        long particleInfoSize,
+        [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 3)] ParticleInfo[] particleInfos,
         long linkCount,
-        [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 4)] Link[] links
+        [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 5)] Link[] links
         );
 
     [DllImport("Engine.dll", CallingConvention = CallingConvention.Cdecl)]
     static extern void EngineSync(
         IntPtr engine,
         ref Parameters parameters,
-        long particleCount,
-        [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] ref Particle[] particles,
-        [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] ParticleInfo[] particleInfos);
+        long particleDataSize,
+        [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] ref double[] particleData,
+        long particleInfoSize,
+        [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 4)] ParticleInfo[] particleInfos);
 
     [DllImport("Engine.dll", CallingConvention = CallingConvention.Cdecl)]
     static extern long EngineStepCount(

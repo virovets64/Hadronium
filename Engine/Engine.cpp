@@ -7,8 +7,9 @@ const int Dimension = 2;
 
 extern "C" __declspec(dllexport) void* EngineStart(
   Parameters* parameters, 
-  __int64 particleCount, 
+  __int64 particleDataSize, 
   Particle<ValType, Dimension>* particles, 
+  __int64 particleCount,
   ParticleInfo* particleInfos,
   __int64 linkCount, 
   LinkInfo* links)
@@ -19,8 +20,9 @@ extern "C" __declspec(dllexport) void* EngineStart(
 extern "C" __declspec(dllexport) void EngineSync(
   void* engine, 
   Parameters* parameters, 
-  __int64 particleCount, 
+  __int64 particleDataSize,
   Particle<ValType, Dimension>*& particles,
+  __int64 particleCount,
   ParticleInfo* particleInfos)
 {
   ((Engine<ValType, Dimension>*)engine)->Sync(*parameters, particles, particleInfos);
