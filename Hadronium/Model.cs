@@ -2,62 +2,29 @@
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Media;
-#if Model3D
-using System.Windows.Media.Media3D;
-#endif
 using System.ComponentModel;
 
 namespace Hadronium
 {
-  public class Utils
-  {
-#if Model3D
-        public static void Zero(ref Point3D a)
-        {
-            a.X = a.Y = a.Z = 0;
-        }
-        public static void Zero(ref Vector3D a)
-        {
-            a.X = a.Y = a.Z = 0;
-        }
-#else
-    public static void Zero(ref Point a)
-    {
-      a.X = a.Y = 0;
-    }
-    public static void Zero(ref Vector a)
-    {
-      a.X = a.Y = 0;
-    }
-#endif
-  }
-
-
   public class Particle
   {
-    public Particle()
+    public Particle(int dimension)
     {
-      Utils.Zero(ref Position);
-      Utils.Zero(ref Velocity);
+      Position = new double[dimension];
+      Velocity = new double[dimension];
       Mass = 1;
       Fixed = false;
       FillColor = Color.FromRgb(100, 200, 100);
       StrokeColor = Colors.Transparent;
     }
-#if Model3D
-        public Point3D Position;
-        public Vector3D Velocity;
-#else
-    public Point Position;
-    public Vector Velocity;
-#endif
+    public double[] Position;
+    public double[] Velocity;
     public double Mass;
     public bool Fixed;
     public string Name;
     public Color FillColor;
     public Color StrokeColor;
     public object Tag;
-
   }
 
   public class Link
@@ -73,6 +40,16 @@ namespace Hadronium
     public double Strength;
   }
 
+  public class Box
+  {
+    public Box(int dimension)
+    {
+      P1 = new double[dimension];
+      P2 = new double[dimension];
+    }
+    public double[] P1;
+    public double[] P2;
+  }
 
   public class Model : INotifyPropertyChanged
   {
@@ -84,6 +61,17 @@ namespace Hadronium
     public int Dimension 
     {
       get { return dimension; }
+    }
+
+    public double Distance(double[] p1, double[] p2)
+    {
+      double sum = 0;
+      for (int i = 0; i < p1.Length; i++)
+      {
+        var d = p2[i] - p1[i];
+        sum += d * d;
+      }
+      return Math.Sqrt(sum);
     }
 
     public Particle FindParticle(string name)
@@ -235,12 +223,7 @@ namespace Hadronium
       Links.Clear();
     }
 
-
-#if Model3D
-    public void AddRandomParticles(int particleCount, int linkCount, Rect3D zone)
-#else
-    public void AddRandomParticles(int particleCount, int linkCount, Rect zone)
-#endif
+    public void AddRandomParticles(int particleCount, int linkCount, Box zone)
     {
       int maxLinkCount = particleCount * (particleCount - 1) / 2;
       if (linkCount > maxLinkCount)
@@ -249,7 +232,7 @@ namespace Hadronium
       var newParticles = new List<Particle>();
       for (int i = 0; i < particleCount; i++)
       {
-        Particle particle = new Particle();
+        Particle particle = new Particle(Dimension);
         newParticles.Add(particle);
       }
       randomizeParticlePositions(newParticles, zone);
@@ -265,28 +248,31 @@ namespace Hadronium
     }
 
 
-#if Model3D
-    private void randomizeParticlePositions(List<Particle> particles, Rect3D zone)
+    private void randomizeParticlePositions(List<Particle> particles, Box zone)
     {
       if (particles.Count == 0)
         return;
-      double averageDist = Math.Pow(zone.SizeX * zone.SizeY * zone.SizeZ / particles.Count, (double)1/3);
+
+      double volume = 1;
+      for (int i = 0; i < Dimension; i++)
+        volume *= (zone.P2[i] - zone.P1[i]);
+
+      double averageDist = Math.Pow(volume, 1.0 / Dimension) / particles.Count;
       var random = new Random();
       foreach (var p in particles)
       {
-        Utils.Zero(ref p.Velocity);
+        Array.Clear(p.Velocity, 0, Dimension);
         while (true)
         {
-          p.Position.X = random.NextDouble() * zone.SizeX + zone.X;
-          p.Position.Y = random.NextDouble() * zone.SizeY + zone.Y;
-          p.Position.Z = random.NextDouble() * zone.SizeZ + zone.Z;
+          for (int i = 0; i < Dimension; i++)
+            p.Position[i] = random.NextDouble() * (zone.P2[i] - zone.P1[i]) + zone.P1[i];
 
           bool isFarEnough = true;
           foreach (var p2 in particles)
           {
             if (p2 != p)
             {
-              if ((p2.Position - p.Position).Length < averageDist / 2)
+              if ( Distance(p2.Position, p.Position) < averageDist / 2)
               {
                 isFarEnough = false;
                 break;
@@ -298,53 +284,13 @@ namespace Hadronium
         }
       }
     }
-#else
-    private void randomizeParticlePositions(List<Particle> particles, Rect zone)
-    {
-      if (particles.Count == 0)
-        return;
-      double averageDist = Math.Sqrt(zone.Height * zone.Width / particles.Count);
-      var random = new Random();
-      foreach (var p in particles)
-      {
-        Utils.Zero(ref p.Velocity);
-        while (true)
-        {
-          p.Position.X = random.NextDouble() * zone.Width + zone.Left;
-          p.Position.Y = random.NextDouble() * zone.Height + zone.Top;
-
-          bool isFarEnough = true;
-          foreach (var p2 in particles)
-          {
-            if (p2 != p)
-            {
-              if ((p2.Position - p.Position).Length < averageDist / 2)
-              {
-                isFarEnough = false;
-                break;
-              }
-            }
-          }
-          if (isFarEnough)
-            break;
-        }
-      }
-    }
-#endif
 
 
 
-#if Model3D
-    public void RandomizePositions(Rect3D zone)
+    public void RandomizePositions(Box zone)
     {
       randomizeParticlePositions(Particles, zone);
     }
-#else
-    public void RandomizePositions(Rect zone)
-    {
-      randomizeParticlePositions(Particles, zone);
-    }
-#endif
 
     private Link findLink(Particle a, Particle b)
     {

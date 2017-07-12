@@ -25,11 +25,7 @@ namespace Hadronium
   /// </summary>
   public partial class MainWindow : Window
   {
-#if Model3D
-        private const string modelFileExt = ".hadronium3D";
-#else
     private const string modelFileExt = ".hadronium";
-#endif
     private Model model = new Model();
     private ModelControl modelControl;
     private StackPanel tunePanel = new StackPanel();
@@ -274,34 +270,17 @@ namespace Hadronium
       return x.ToString(CultureInfo.InvariantCulture);
     }
 
-    private XmlNode write(XmlNode node, string name, Point value)
+    private static String[] CoordNames = new String[] { "X", "Y", "Z" };
+
+    private XmlNode write(XmlNode node, string name, double[] value)
     {
       var result = node.AppendChild(node.OwnerDocument.CreateElement(name));
-      write(result, "X", doubleToString(value.X));
-      write(result, "Y", doubleToString(value.Y));
+      for (int i = 0; i < value.Length; i++)
+        write(result, CoordNames[i], doubleToString(value[i]));
       return result;
     }
 
-    private XmlNode write(XmlNode node, string name, Vector value)
-    {
-      return write(node, name, (Point)value);
-    }
 
-#if Model3D
-    private XmlNode write(XmlNode node, string name, Point3D value)
-    {
-      var result = node.AppendChild(node.OwnerDocument.CreateElement(name));
-      write(result, "X", doubleToString(value.X));
-      write(result, "Y", doubleToString(value.Y));
-      write(result, "Z", doubleToString(value.Z));
-      return result;
-    }
-
-    private XmlNode write(XmlNode node, string name, Vector3D value)
-    {
-      return write(node, name, (Point3D)value);
-    }
-#endif    
     private XmlNode write(XmlNode node, string name, Color value)
     {
       var result = node.AppendChild(node.OwnerDocument.CreateElement(name));
@@ -382,38 +361,13 @@ namespace Hadronium
     {
       return double.Parse(s, CultureInfo.InvariantCulture);
     }
-    private void read(XmlNode node, ref Point result)
+    private void read(XmlNode node, ref double[] result)
     {
       if (node == null)
         return;
-      result.X = stringToDouble(read(node, "X"));
-      result.Y = stringToDouble(read(node, "Y"));
+      for (int i = 0; i < result.Length; i++)
+        result[i] = stringToDouble(read(node, CoordNames[i]));
     }
-    private void read(XmlNode node, ref Vector result)
-    {
-      if (node == null)
-        return;
-      result.X = stringToDouble(read(node, "X"));
-      result.Y = stringToDouble(read(node, "Y"));
-    }
-#if Model3D
-    private void read(XmlNode node, ref Point3D result)
-    {
-      if (node == null)
-        return;
-      result.X = stringToDouble(read(node, "X"));
-      result.Y = stringToDouble(read(node, "Y"));
-      result.Z = stringToDouble(read(node, "Z"));
-    }
-    private void read(XmlNode node, ref Vector3D result)
-    {
-      if (node == null)
-        return;
-      result.X = stringToDouble(read(node, "X"));
-      result.Y = stringToDouble(read(node, "Y"));
-      result.Z = stringToDouble(read(node, "Z"));
-    }
-#endif
     
     private void read(XmlNode node, ref Color result)
     {
@@ -427,7 +381,7 @@ namespace Hadronium
 
     private Particle readParticle(XmlNode node)
     {
-      var result = new Particle();
+      var result = new Particle(model.Dimension);
       result.Name = read(node, "Id");
       result.Mass = stringToDouble(read(node, "Mass", "1"));
       read(node.SelectSingleNode("Position"), ref result.Position);
@@ -498,7 +452,7 @@ namespace Hadronium
             var particle = model.FindParticle(items[0]);
             if (particle == null)
             {
-              particle = new Particle();
+              particle = new Particle(model.Dimension);
               particle.Name = items[0];
               model.Particles.Add(particle);
             }

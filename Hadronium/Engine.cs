@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Windows;
-#if Model3D
-using System.Windows.Media.Media3D;
-#endif
 
 namespace Hadronium
 {
@@ -83,10 +80,10 @@ namespace Hadronium
       int pIndex = 0;
       foreach(var particle in model.Particles)
       {
-        particleData[pIndex++] = particle.Position.X;
-        particleData[pIndex++] = particle.Position.Y;
-        particleData[pIndex++] = particle.Velocity.X;
-        particleData[pIndex++] = particle.Velocity.Y;
+        foreach(var x in particle.Position)
+          particleData[pIndex++] = x;
+        foreach (var x in particle.Velocity)
+          particleData[pIndex++] = x;
       }
       for (int i = 0; i < model.Particles.Count; i++)
         particleInfos[i].Mass = model.Particles[i].Mass;
@@ -127,10 +124,10 @@ namespace Hadronium
       {
         if (particle.Fixed)
         {
-          particleData[pIndex++] = particle.Position.X;
-          particleData[pIndex++] = particle.Position.Y;
-          particleData[pIndex++] = particle.Velocity.X;
-          particleData[pIndex++] = particle.Velocity.Y;
+          foreach (var x in particle.Position)
+            particleData[pIndex++] = x;
+          foreach (var x in particle.Velocity)
+            particleData[pIndex++] = x;
         }
         else
           pIndex += model.Dimension * 2;
@@ -143,10 +140,10 @@ namespace Hadronium
       {
         if (!particle.Fixed)
         {
-          particle.Position.X = particleData[pIndex++];
-          particle.Position.Y = particleData[pIndex++];
-          particle.Velocity.X = particleData[pIndex++];
-          particle.Velocity.Y = particleData[pIndex++];
+          for (int i = 0; i < particle.Position.Length; i++)
+            particle.Position[i] = particleData[pIndex++];
+          for (int i = 0; i < particle.Position.Length; i++)
+            particle.Velocity[i] = particleData[pIndex++];
         }
         else
           pIndex += model.Dimension * 2;

@@ -297,21 +297,35 @@ namespace Hadronium
         }
 
 #else
-    private Point ToWorldCoord(Point p)
+    private double[] ToWorldCoord(Point p)
     {
-      return s2w.Transform(p);
+      double[] result = new double[model.Dimension];
+      var p1 = s2w.Transform(p);
+      result[0] = p1.X;
+      result[1] = p1.Y;
+      return result;
     }
-    private Vector ToWorldCoord(Vector v)
+    
+    private double[] ToWorldCoord(Vector p)
     {
-      return s2w.Transform(v);
+      double[] result = new double[model.Dimension];
+      var p1 = s2w.Transform(p);
+      result[0] = p1.X;
+      result[1] = p1.Y;
+      return result;
     }
-    private Rect ToWorldCoord(Rect r)
+    
+    private Box ToWorldCoord(Rect r)
     {
-      return new Rect(ToWorldCoord(r.TopLeft), ToWorldCoord(r.BottomRight));
+      var box = new Box(model.Dimension);
+      box.P1 = ToWorldCoord(r.TopLeft);
+      box.P2 = ToWorldCoord(r.BottomRight);
+      return box;
     }
-    private Point ToScreenCoord(Point p)
+
+    private Point ToScreenCoord(double[] x)
     {
-      return w2s.Transform(p);
+      return w2s.Transform(new Point(x[0], x[1]));
     }
 #endif
 
@@ -360,7 +374,7 @@ namespace Hadronium
       Pen fixedPen = new Pen(Brushes.Black, 1);
       foreach (var link in model.Links)
       {
-        drawingContext.DrawLine(link.A.Position.X < link.B.Position.X ? forwardPen : backwardPen,
+        drawingContext.DrawLine(link.A.Position[0] < link.B.Position[0] ? forwardPen : backwardPen,
             ToScreenCoord(link.A.Position),
             ToScreenCoord(link.B.Position));
       }
@@ -429,7 +443,7 @@ namespace Hadronium
           {
             if(hitParticle == null)
             {
-              var newParticle = new Particle();
+              var newParticle = new Particle(model.Dimension);
               newParticle.Position = ToWorldCoord(mouseDownPosition);
               newParticle.FillColor = getRandomColor();
               model.Particles.Add(newParticle);
@@ -503,8 +517,9 @@ namespace Hadronium
           {
             if ((particle.Tag as DrawData).Selected)
             {
-              particle.Position += moveBy;
-              Utils.Zero(ref particle.Velocity);
+              for (int i = 0; i < moveBy.Length; i++)
+                particle.Position[i] += moveBy[i];
+              Array.Clear(particle.Velocity, 0, particle.Velocity.Length);
               // particle.Velocity = v / (dragStopwatch.ElapsedMilliseconds * 0.001 * model.TimeScale);
             }
           }
@@ -544,14 +559,10 @@ namespace Hadronium
         case ToolKind.ScrollView:
           break;
         case ToolKind.SelectRectangle:
-          var r = ToWorldCoord(new Rect(mouseDownPosition, e.GetPosition(this)));
-#if Model3D
-                    r.Z = double.NegativeInfinity;
-                    r.SizeZ = double.PositiveInfinity;
-#endif
+          var r = new Rect(mouseDownPosition, e.GetPosition(this));
           foreach (var particle in model.Particles)
           {
-            if (r.Contains(particle.Position))
+            if (r.Contains(ToScreenCoord(particle.Position)))
               (particle.Tag as DrawData).Selected = true;
           }
           selectionAdorner.Destroy();
@@ -582,22 +593,13 @@ namespace Hadronium
       setViewScale(e.Delta > 0 ? w2s.M11 * 1.1 : w2s.M11 / 1.1, e.GetPosition(this));
     }
 
-#if Model3D
-    public Rect3D getInitialRect()
-#else
-    public Rect getInitialRect()
-#endif
+    public Box getInitialRect()
     {
       Size size = RenderSize;
       Rect rect = new Rect(size);
       rect.Inflate(-size.Width / 4, -size.Height / 4);
       var result = ToWorldCoord(rect);
-#if Model3D
-      result.Z = result.X;
-      result.SizeZ = result.SizeX;
-#endif
       return result;
-
     }
 
     internal void RandomizePositions()
