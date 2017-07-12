@@ -52,9 +52,9 @@ namespace Hadronium
       public bool Fixed;
     }
 
-    public Particle[] particles;
-    public ParticleInfo[] particleInfos;
-    public Link[] links;
+    private Particle[] particles;
+    private ParticleInfo[] particleInfos;
+    private Link[] links;
 
     [StructLayout(LayoutKind.Sequential)]
     public struct Parameters
@@ -87,8 +87,24 @@ namespace Hadronium
 
     private IntPtr handle = IntPtr.Zero;
     
-    public void Start()
+    public void Start(Model model)
     {
+      particles = new Particle[model.Particles.Count];
+      particleInfos = new ParticleInfo[model.Particles.Count];
+      links = new Link[model.Links.Count];
+      for (int i = 0; i < model.Particles.Count; i++)
+      {
+        particles[i].Position = model.Particles[i].Position;
+        particles[i].Velocity = model.Particles[i].Velocity;
+        particleInfos[i].Mass = model.Particles[i].Mass;
+      }
+      for (int i = 0; i < model.Links.Count; i++)
+      {
+        links[i].A = model.GetParticleIndex(model.Links[i].A);
+        links[i].B = model.GetParticleIndex(model.Links[i].B);
+        links[i].Strength = model.Links[i].Strength;
+      }
+
       handle = EngineStart(ref parameters, particles.Length, particles, particleInfos, links.Length, links);
     }
 
@@ -108,9 +124,28 @@ namespace Hadronium
       get { return Active ? EngineStepCount(handle) : 0; }
     }
 
-    public void Sync()
+    public void Sync(Model model)
     {
+      for (int i = 0; i < particles.Length; i++)
+      {
+        particleInfos[i].Fixed = model.Particles[i].Fixed;
+        if (model.Particles[i].Fixed)
+        {
+          particles[i].Position = model.Particles[i].Position;
+          particles[i].Velocity = model.Particles[i].Velocity;
+        }
+      }
+
       EngineSync(handle, ref parameters, particles.Length, ref particles, particleInfos);
+
+      for (int i = 0; i < particles.Length; i++)
+      {
+        if (!model.Particles[i].Fixed)
+        {
+          model.Particles[i].Position = particles[i].Position;
+          model.Particles[i].Velocity = particles[i].Velocity;
+        }
+      }
     }
 
     [DllImport("Engine.dll", CallingConvention = CallingConvention.Cdecl)]

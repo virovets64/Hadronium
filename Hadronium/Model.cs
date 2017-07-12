@@ -214,22 +214,7 @@ namespace Hadronium
     {
       if (!Active)
       {
-        engine.particles = new Engine.Particle[Particles.Count];
-        engine.particleInfos = new Engine.ParticleInfo[Particles.Count];
-        engine.links = new Engine.Link[Links.Count];
-        for (int i = 0; i < Particles.Count; i++)
-        {
-          engine.particles[i].Position = Particles[i].Position;
-          engine.particles[i].Velocity = Particles[i].Velocity;
-          engine.particleInfos[i].Mass = Particles[i].Mass;
-        }
-        for (int i = 0; i < Links.Count; i++)
-        {
-          engine.links[i].A = GetParticleIndex(Links[i].A);
-          engine.links[i].B = GetParticleIndex(Links[i].B);
-          engine.links[i].Strength = Links[i].Strength;
-        }
-        engine.Start();
+        engine.Start(this);
       }
     }
 
@@ -392,24 +377,7 @@ namespace Hadronium
     {
       if (!Active)
         return;
-      for (int i = 0; i < engine.particles.Length; i++)
-      {
-        engine.particleInfos[i].Fixed = Particles[i].Fixed;
-        if (Particles[i].Fixed)
-        {
-          engine.particles[i].Position = Particles[i].Position;
-          engine.particles[i].Velocity = Particles[i].Velocity;
-        }
-      }
-      engine.Sync();
-      for (int i = 0; i < engine.particles.Length; i++)
-      {
-        if (!Particles[i].Fixed)
-        {
-          Particles[i].Position = engine.particles[i].Position;
-          Particles[i].Velocity = engine.particles[i].Velocity;
-        }
-      }
+      engine.Sync(this);
       StepCount = engine.parameters.Out.StepCount;
       StepElapsedTime = engine.parameters.Out.StepElapsedTime;
       RealTimeScale = engine.parameters.Out.RealTimeScale;
