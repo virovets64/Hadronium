@@ -7,18 +7,51 @@
 #include <mutex>
 #include <thread>
 
+class EngineBase
+{
+public:
+  virtual ~EngineBase()
+  {
+    ShouldStop = true;
+    WorkerThread.join();
+  }
+
+  virtual void Start(Parameters& parameters,
+    long particleCount,
+    double* particleData,
+    ParticleInfo* particleInfos,
+    long linkCount,
+    LinkInfo* links) = 0;
+
+  virtual void Sync(Parameters& parameters, double* particleData, ParticleInfo* particleInfos) = 0;
+
+  __int64 GetStepCount() const
+  {
+    return Params.Out.StepCount;
+  }
+protected:
+  Parameters Params;
+  long ParticleCount;
+  long LinkCount;
+
+  Parameters BarrierParams;
+  std::thread WorkerThread;
+  std::mutex Mutex;
+  bool ShouldStop;
+};
+
 template<typename Number, int Dim>
-class Engine
+class Engine: public EngineBase
 {
 public:
   using MyParticle = Particle<Number, Dim>;
 
-  Engine(Parameters& parameters, 
+  virtual void Start(Parameters& parameters,
     long particleCount,
-    MyParticle* particles,
+    double* particleData,
     ParticleInfo* particleInfos,
     long linkCount,
-    LinkInfo* links)
+    LinkInfo* links) override
   {
     Params = parameters;
     BarrierParams = parameters;
@@ -28,6 +61,7 @@ public:
     ParticleInfos.reset(new ParticleInfo[particleCount]);
     Links.reset(new LinkInfo[linkCount]);
     BarrierParticles.reset(new MyParticle[particleCount]);
+    MyParticle* particles = reinterpret_cast<MyParticle*>(particleData);
     for (int i = 0; i < ParticleCount; i++)
     {
       WorkingParticles[i] = particles[i];
@@ -38,24 +72,22 @@ public:
     {
       Links[i] = links[i];
     }
-    Solver.Initialize(particleCount * 4, &WorkingParticles[0].Position.Data[0], [this](const Number* y, Number* fy) 
-    { 
+    Solver.Initialize(particleCount * 4, &WorkingParticles[0].Position.Data[0], [this](const Number* y, Number* fy)
+    {
       return Calculate((const MyParticle*)y, (MyParticle*)fy);
     });
     ShouldStop = false;
 
     WorkerThread = std::thread([this]()
-    { 
-      Run(); 
+    {
+      Run();
     });
   }
-  ~Engine()
+
+  virtual void Sync(Parameters& parameters, double* particleData, ParticleInfo* particleInfos) override
   {
-    ShouldStop = true;
-    WorkerThread.join();
-  }
-  void Sync(Parameters& parameters, Particle<Number, Dim>* particles, ParticleInfo* particleInfos)
-  {
+    MyParticle* particles = reinterpret_cast<MyParticle*>(particleData);
+
     std::lock_guard<std::mutex> lock(Mutex);
 
     for (int i = 0; i < ParticleCount; i++)
@@ -77,10 +109,6 @@ public:
     memcpy(&parameters.Out, &BarrierParams.Out, sizeof(Params.Out));
   }
 
-  __int64 GetStepCount()
-  {
-    return Params.Out.StepCount;
-  }
 private:
   EulerSolver<Number> Solver;
   //	RungeKuttaSolver<Number> Solver;
@@ -90,15 +118,6 @@ private:
   std::unique_ptr<ParticleInfo[]> ParticleInfos;
 
   std::unique_ptr<MyParticle[]> BarrierParticles;
-
-  long ParticleCount;
-  long LinkCount;
-
-  Parameters Params;
-  Parameters BarrierParams;
-  std::thread WorkerThread;
-  std::mutex Mutex;
-  bool ShouldStop;
 
   void Calculate(const MyParticle* inputs, MyParticle* outputs)
   {

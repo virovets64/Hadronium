@@ -95,7 +95,10 @@ namespace Hadronium
         links[i].Strength = model.Links[i].Strength;
       }
 
-      handle = EngineStart(ref parameters, particleData.Length, particleData, particleInfos.Length, particleInfos, links.Length, links);
+      handle = EngineStart(ref parameters, model.Dimension, 
+        particleData.Length, particleData, 
+        particleInfos.Length, particleInfos, 
+        links.Length, links);
     }
 
     public void Stop()
@@ -153,6 +156,7 @@ namespace Hadronium
     [DllImport("Engine.dll", CallingConvention = CallingConvention.Cdecl)]
     static extern IntPtr EngineStart(
         ref Parameters parameters,
+        int dimension,
         long particleDataSize,
         [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] double[] particleData,
         long particleInfoSize,
