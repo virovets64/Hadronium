@@ -62,6 +62,7 @@
     </Compile>
     <Compile Include="PropertyDescription.cs" />
     <Compile Include="SelectionAdorner.cs" />
+    <Compile Include="Transform.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

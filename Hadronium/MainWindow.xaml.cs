@@ -51,7 +51,6 @@ namespace Hadronium
             new PropertyDescription("Accuracy"          ,  50.0,  0.1,  1E5, new LogarithmicConverter()),
         };
     private static PropertyDescription[] controlPropertyDescriptions = new PropertyDescription[] { 
-            new PropertyDescription("ViewScale"         ,   1.0, 1E-5, 1E5, new LogarithmicConverter()),
             new PropertyDescription("ParticleSize"      ,   8.0, 0.8, 800.0, new LogarithmicConverter()),
             new PropertyDescription("TextSize"          ,  12.0, 0.12, 1200.0, new LogarithmicConverter()),
             new PropertyDescription("RefreshPeriod"     , 0.035, 0.0035, 0.35, new LogarithmicConverter(), "RenderElapsedTime"),
@@ -538,16 +537,6 @@ namespace Hadronium
       }
     }
 
-    //[Serializable]
-    //private class ApplicationState
-    //{
-    //  public Model Model;
-    //  public double ViewScale;
-    //  public Vector Offset;
-    //  public double RefreshPeriod;
-    //  public double ParticleSize;
-    //  public double TextSize;
-    //}
 
     private bool rotating = false;
     private Point rotationStart;

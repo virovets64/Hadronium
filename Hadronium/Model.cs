@@ -47,6 +47,11 @@ namespace Hadronium
       P1 = new double[dimension];
       P2 = new double[dimension];
     }
+    public Box(double[] p1, double[] p2)
+    {
+      P1 = p1;
+      P2 = p2;
+    }
     public double[] P1;
     public double[] P2;
   }

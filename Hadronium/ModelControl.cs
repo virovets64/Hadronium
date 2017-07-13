@@ -6,9 +6,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 using System.Windows.Media.Imaging;
-#if Model3D
-using System.Windows.Media.Media3D;
-#endif
 using System.Diagnostics;
 using System.Globalization;
 using System.ComponentModel;
@@ -35,20 +32,7 @@ namespace Hadronium
           PropertyChanged(this, new PropertyChangedEventArgs("RefreshPeriod"));
       }
     }
-    public Vector Offset
-    {
-      get { return offset; }
-      set
-      {
-        offset = value;
-        calcTransforms();
-      }
-    }
-    public double ViewScale
-    {
-      get { return viewScale / PixelsPerMeter; }
-      set { setViewScale(value * PixelsPerMeter, new Point(RenderSize.Width / 2, RenderSize.Height / 2)); }
-    }
+
     public double ParticleSize
     {
       get { return particleSize; }
@@ -168,51 +152,12 @@ namespace Hadronium
 
     
     private double refreshPeriod = 0.035;
-    private const int PixelsPerMeter = 500;
     private const double RotationSpeed = 1;
 
-    private Vector offset = new Vector(0, 0);
-    private double viewScale = PixelsPerMeter;
     private double particleSize = 8;
     private double textSize = 12;
 
-#if Model3D
-        private Matrix3D w2s;
-        private Matrix3D s2w;
-        private Vector3D rotation = new Vector3D(0, 0, 0);
-
-        public Vector3D Rotation
-        {
-            get { return rotation; }
-            set { rotation = value; calcTransforms(); InvalidateVisual(); }
-        }
-
-#else
-    private Matrix w2s = new Matrix();
-    private Matrix s2w = new Matrix();
-#endif
-
-    private void calcTransforms()
-    {
-#if Model3D
-            Point3D center = ToWorldCoord(new Point(RenderSize.Width / 2, RenderSize.Height / 2));
-//            center.X = center.Y = 0;
-            center.Z = 0;
-            w2s = new Matrix3D();
-            w2s.RotateAt(new Quaternion(new Vector3D(1, 0, 0), rotation.X * RotationSpeed), center);
-            w2s.RotateAt(new Quaternion(new Vector3D(0, 1, 0), rotation.Y * RotationSpeed), center);
-            w2s.RotateAt(new Quaternion(new Vector3D(0, 0, 1), rotation.Z * RotationSpeed), center);
-            w2s.ScaleAt(new Vector3D(viewScale, viewScale, viewScale), new Point3D(0, 0, 0));
-            w2s.Translate(new Vector3D(offset.X, offset.Y, 0));
-#else
-      w2s = new Matrix();
-      w2s.Scale(viewScale, viewScale);
-      w2s.Translate(offset.X, offset.Y);
-#endif
-      s2w = w2s;
-      s2w.Invert();
-    }
-
+    private Transform transform = new Transform2D();
 
     private enum ToolKind
     {
@@ -265,69 +210,12 @@ namespace Hadronium
       base.OnInitialized(e);
       //            model.Changed += new EventHandler(model_Changed);
       myTimer = new DispatcherTimer(new TimeSpan((long)(refreshPeriod * 10000)), DispatcherPriority.SystemIdle, timerProc, Dispatcher);
-      calcTransforms();
       createPinImage();
 
     }
 
     SelectionAdorner selectionAdorner;
 
-
-#if Model3D
-        private Point3D ToWorldCoord(Point p)
-        {
-            return s2w.Transform(new Point3D(p.X, p.Y, 0));
-        }
-        private Vector3D ToWorldCoord(Vector v)
-        {
-            return s2w.Transform(new Vector3D(v.X, v.Y, 0));
-        }
-        private Size3D ToWorldCoord(Size s)
-        {
-            return (Size3D)s2w.Transform(new Vector3D(s.Width, s.Height, 0));
-        }
-        private Rect3D ToWorldCoord(Rect r)
-        {
-            return new Rect3D(ToWorldCoord(r.TopLeft), ToWorldCoord(r.Size));
-        }
-        private Point ToScreenCoord(Point3D p)
-        {
-            Point3D p1 = w2s.Transform(p);
-            return new Point(p1.X, p1.Y);
-        }
-
-#else
-    private double[] ToWorldCoord(Point p)
-    {
-      double[] result = new double[model.Dimension];
-      var p1 = s2w.Transform(p);
-      result[0] = p1.X;
-      result[1] = p1.Y;
-      return result;
-    }
-    
-    private double[] ToWorldCoord(Vector p)
-    {
-      double[] result = new double[model.Dimension];
-      var p1 = s2w.Transform(p);
-      result[0] = p1.X;
-      result[1] = p1.Y;
-      return result;
-    }
-    
-    private Box ToWorldCoord(Rect r)
-    {
-      var box = new Box(model.Dimension);
-      box.P1 = ToWorldCoord(r.TopLeft);
-      box.P2 = ToWorldCoord(r.BottomRight);
-      return box;
-    }
-
-    private Point ToScreenCoord(double[] x)
-    {
-      return w2s.Transform(new Point(x[0], x[1]));
-    }
-#endif
 
     private void timerProc(Object state, EventArgs e)
     {
@@ -344,7 +232,7 @@ namespace Hadronium
       for (int i = model.Particles.Count - 1; i >= 0; i--)
       {
         Particle particle = model.Particles[i];
-        Vector v = ToScreenCoord(particle.Position) - p;
+        Vector v = transform.ToScreen(particle.Position) - p;
         if (v.Length <= ParticleSize / 2 + 4)
           return particle;
       }
@@ -375,8 +263,8 @@ namespace Hadronium
       foreach (var link in model.Links)
       {
         drawingContext.DrawLine(link.A.Position[0] < link.B.Position[0] ? forwardPen : backwardPen,
-            ToScreenCoord(link.A.Position),
-            ToScreenCoord(link.B.Position));
+            transform.ToScreen(link.A.Position),
+            transform.ToScreen(link.B.Position));
       }
       foreach (var particle in model.Particles)
       {
@@ -395,7 +283,7 @@ namespace Hadronium
           particle.Tag = drawData;
         }
 
-        Point p = ToScreenCoord(particle.Position);
+        Point p = transform.ToScreen(particle.Position);
         drawingContext.DrawEllipse(drawData.Brush, drawData.Pen,
             p,
             ParticleSize,
@@ -444,7 +332,7 @@ namespace Hadronium
             if(hitParticle == null)
             {
               var newParticle = new Particle(model.Dimension);
-              newParticle.Position = ToWorldCoord(mouseDownPosition);
+              newParticle.Position = transform.ToWorld(mouseDownPosition);
               newParticle.FillColor = getRandomColor();
               model.Particles.Add(newParticle);
               InvalidateVisual();
@@ -509,7 +397,7 @@ namespace Hadronium
     {
       Point p = e.GetPosition(this);
       mouseCurrentPosition = p;
-      var moveBy = ToWorldCoord(p - mouseDownPosition);
+      var moveBy = transform.ToWorld(p - mouseDownPosition);
       switch (toolKind)
       {
         case ToolKind.MoveSelectedParticles:
@@ -529,7 +417,7 @@ namespace Hadronium
           InvalidateVisual();
           break;
         case ToolKind.ScrollView:
-          Offset += (p - mouseDownPosition);
+          transform.Offset += (p - mouseDownPosition);
           mouseDownPosition = p;
           InvalidateVisual();
           break;
@@ -562,7 +450,7 @@ namespace Hadronium
           var r = new Rect(mouseDownPosition, e.GetPosition(this));
           foreach (var particle in model.Particles)
           {
-            if (r.Contains(ToScreenCoord(particle.Position)))
+            if (r.Contains(transform.ToScreen(particle.Position)))
               (particle.Tag as DrawData).Selected = true;
           }
           selectionAdorner.Destroy();
@@ -574,23 +462,22 @@ namespace Hadronium
       ReleaseMouseCapture();
     }
 
-    private void setViewScale(double newViewScale, Point p)
+    private void changeScale(double newViewScale, Point p)
     {
-      if (viewScale == newViewScale)
-        return;
-      offset.X = p.X - (p.X - offset.X) * newViewScale / viewScale;
-      offset.Y = p.Y - (p.Y - offset.Y) * newViewScale / viewScale;
-      viewScale = newViewScale;
-      calcTransforms();
-      if (PropertyChanged != null)
-        PropertyChanged(this, new PropertyChangedEventArgs("ViewScale"));
-      InvalidateVisual();
+      if(transform.changeScale(newViewScale, p))
+      {
+        if (PropertyChanged != null)
+          PropertyChanged(this, new PropertyChangedEventArgs("ViewScale"));
+        InvalidateVisual();
+      }
     }
-
 
     protected override void OnMouseWheel(MouseWheelEventArgs e)
     {
-      setViewScale(e.Delta > 0 ? w2s.M11 * 1.1 : w2s.M11 / 1.1, e.GetPosition(this));
+      double coef = 1.1;
+      if (e.Delta < 0)
+        coef = 1.0 / coef;
+      changeScale(transform.ViewScale * coef, e.GetPosition(this));
     }
 
     public Box getInitialRect()
@@ -598,7 +485,7 @@ namespace Hadronium
       Size size = RenderSize;
       Rect rect = new Rect(size);
       rect.Inflate(-size.Width / 4, -size.Height / 4);
-      var result = ToWorldCoord(rect);
+      var result = transform.ToWorld(rect);
       return result;
     }
 
