@@ -148,6 +148,16 @@ namespace Hadronium
             return !model.Active;
         }
 
+        public void SelectAll(bool value)
+        {
+            foreach (var particle in model.Particles)
+            {
+                DrawData drawData = particle.Tag as DrawData;
+                drawData.Selected = value;
+            }
+            InvalidateVisual();
+        }
+
         public RenderTargetBitmap RenderToBitmap()
         {
 

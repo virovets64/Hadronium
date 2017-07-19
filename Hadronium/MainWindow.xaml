@@ -4,18 +4,20 @@
         xmlns:custom="clr-namespace:Hadronium"
         Title="Hadronium" Width="800" Height="600" Closing="Window_Closing">
   <Window.CommandBindings>
-    <CommandBinding Command="{x:Static custom:MainWindow.NewCmd}" Executed="NewCmdExecuted" CanExecute="NewCmdCanExecute"/>
-    <CommandBinding Command="{x:Static custom:MainWindow.ClearCmd}" Executed="ClearCmdExecuted" CanExecute="ClearCmdCanExecute"/>
-    <CommandBinding Command="{x:Static custom:MainWindow.RandomizeCmd}" Executed="RandomizeCmdExecuted" CanExecute="RandomizeCmdCanExecute" />
-    <CommandBinding Command="{x:Static custom:MainWindow.AddParticlesCmd}" Executed="AddParticlesCmdExecuted" CanExecute="AddParticlesCmdCanExecute" />
-    <CommandBinding Command="{x:Static custom:MainWindow.StartCmd}" Executed="StartCmdExecuted" CanExecute="StartCmdCanExecute" />
-    <CommandBinding Command="{x:Static custom:MainWindow.StopCmd}" Executed="StopCmdExecuted" CanExecute="StopCmdCanExecute" />
+    <CommandBinding Command="{x:Static custom:MainWindow.NewCmd}" Executed="NewCmd_Executed" CanExecute="NewCmd_CanExecute"/>
+    <CommandBinding Command="{x:Static custom:MainWindow.ClearCmd}" Executed="ClearCmd_Executed" CanExecute="ClearCmd_CanExecute"/>
+    <CommandBinding Command="{x:Static custom:MainWindow.RandomizeCmd}" Executed="RandomizeCmd_Executed" CanExecute="RandomizeCmd_CanExecute" />
+    <CommandBinding Command="{x:Static custom:MainWindow.AddParticlesCmd}" Executed="AddParticlesCmd_Executed" CanExecute="AddParticlesCmd_CanExecute" />
+    <CommandBinding Command="{x:Static custom:MainWindow.StartCmd}" Executed="StartCmd_Executed" CanExecute="StartCmd_CanExecute" />
+    <CommandBinding Command="{x:Static custom:MainWindow.StopCmd}" Executed="StopCmd_Executed" CanExecute="StopCmd_CanExecute" />
     <CommandBinding Command="{x:Static custom:MainWindow.PinCmd}" Executed="PinCmd_Executed" CanExecute="PinCmd_CanExecute" />
     <CommandBinding Command="{x:Static custom:MainWindow.UnpinCmd}" CanExecute="UnpinCmd_CanExecute" Executed="UnpinCmd_Executed" />
     <CommandBinding Command="{x:Static custom:MainWindow.LinkCmd}" Executed="LinkCmd_Executed" CanExecute="LinkCmd_CanExecute" />
     <CommandBinding Command="{x:Static custom:MainWindow.UnlinkCmd}" CanExecute="UnlinkCmd_CanExecute" Executed="UnlinkCmd_Executed" />
-    <CommandBinding Command="Open" Executed="OpenCmdExecuted" />
-    <CommandBinding Command="Save" Executed="SaveCmdExecuted" />
+    <CommandBinding Command="{x:Static custom:MainWindow.Deselect}" Executed="DeselectCmd_Executed" />
+    <CommandBinding Command="Open" Executed="OpenCmd_Executed" />
+    <CommandBinding Command="Save" Executed="SaveCmd_Executed" />
+    <CommandBinding Command="SelectAll" Executed="SelectAllCmd_Executed" />
   </Window.CommandBindings>
 
   <DockPanel LastChildFill="True">
@@ -34,6 +36,8 @@
           <MenuItem Header="Clear" Command="{x:Static custom:MainWindow.ClearCmd}"/>
           <MenuItem Header="Add particles..." Command="{x:Static custom:MainWindow.AddParticlesCmd}"/>
           <MenuItem Header="Randomize particle positions" Command="{x:Static custom:MainWindow.RandomizeCmd}"/>
+          <MenuItem Header="Select All" Command="ApplicationCommands.SelectAll"/>
+          <MenuItem Header="Deselect" Command="{x:Static custom:MainWindow.Deselect}"/>
         </MenuItem>
         <Separator/>
         <MenuItem Header="Link" Command="{x:Static custom:MainWindow.LinkCmd}"/>

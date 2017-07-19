@@ -28,6 +28,7 @@ namespace Hadronium
         public static RoutedCommand NewCmd = new RoutedCommand();
         public static RoutedCommand ClearCmd = new RoutedCommand();
         public static RoutedCommand LoadCmd = new RoutedCommand();
+        public static RoutedCommand Deselect = new RoutedCommand();
         public static RoutedCommand RandomizeCmd = new RoutedCommand();
         public static RoutedCommand AddParticlesCmd = new RoutedCommand();
         public static RoutedCommand StartCmd = new RoutedCommand();
@@ -195,29 +196,76 @@ namespace Hadronium
             SaveModelToFile(autosaveFilename);
         }
 
-        private void NewCmdExecuted(object sender, ExecutedRoutedEventArgs e)
+        private void NewCmd_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             model = new Model(int.Parse(e.Parameter.ToString()));
             ModelRecreated();
         }
 
-        private void NewCmdCanExecute(object sender, CanExecuteRoutedEventArgs e)
+        private void NewCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = !model.Active;
         }
 
-        private void ClearCmdExecuted(object sender, ExecutedRoutedEventArgs e)
+        private void SaveCmd_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            SaveFileDialog fileDialog = new SaveFileDialog();
+            PrepareDialog(fileDialog, true);
+            if (fileDialog.ShowDialog(this).Value)
+            {
+                switch (fileDialog.FilterIndex)
+                {
+                    case 1:
+                        SaveModelToFile(fileDialog.FileName);
+                        break;
+                    case 2:
+                        ExportModelToFile(fileDialog.FileName);
+                        break;
+                }
+            }
+        }
+
+        private void OpenCmd_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            OpenFileDialog fileDialog = new OpenFileDialog();
+            PrepareDialog(fileDialog, false);
+            if (fileDialog.ShowDialog(this).Value)
+            {
+                switch (fileDialog.FilterIndex)
+                {
+                    case 1:
+                        LoadModelFromFile(fileDialog.FileName);
+                        break;
+                    case 2:
+                        ImportModelFromTextFile(fileDialog.FileName);
+                        break;
+                }
+                ModelRecreated();
+            }
+        }
+
+        private void ClearCmd_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             modelControl.Model.Clear();
             ModelRecreated();
         }
 
-        private void ClearCmdCanExecute(object sender, CanExecuteRoutedEventArgs e)
+        private void ClearCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = !model.Active;
         }
 
-        private void AddParticlesCmdExecuted(object sender, ExecutedRoutedEventArgs e)
+        private void SelectAllCmd_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            modelControl.SelectAll(true);
+        }
+
+        private void DeselectCmd_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            modelControl.SelectAll(false);
+        }
+
+        private void AddParticlesCmd_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             var dialog = new ParticleGenerationDialog();
             dialog.ParticleCount = 5;
@@ -229,39 +277,79 @@ namespace Hadronium
             }
         }
         
-        private void AddParticlesCmdCanExecute(object sender, CanExecuteRoutedEventArgs e)
+        private void AddParticlesCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = !model.Active;
         }
         
-        private void RandomizeCmdExecuted(object sender, ExecutedRoutedEventArgs e)
+        private void RandomizeCmd_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             modelControl.RandomizePositions();
         }
         
-        private void RandomizeCmdCanExecute(object sender, CanExecuteRoutedEventArgs e)
+        private void RandomizeCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = true;
         }
         
-        private void StartCmdExecuted(object sender, ExecutedRoutedEventArgs e)
+        private void StartCmd_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             model.Start();
         }
         
-        private void StartCmdCanExecute(object sender, CanExecuteRoutedEventArgs e)
+        private void StartCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = !model.Active;
         }
         
-        private void StopCmdExecuted(object sender, ExecutedRoutedEventArgs e)
+        private void StopCmd_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             model.Stop();
         }
         
-        private void StopCmdCanExecute(object sender, CanExecuteRoutedEventArgs e)
+        private void StopCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = model.Active;
+        }
+
+        private void PinCmd_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            modelControl.Pin(true);
+        }
+
+        private void PinCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = modelControl != null && modelControl.CanPin(true);
+        }
+
+        private void UnpinCmd_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            modelControl.Pin(false);
+        }
+
+        private void UnpinCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = modelControl != null && modelControl.CanPin(false);
+        }
+
+        private void LinkCmd_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            modelControl.Link(true);
+        }
+
+        private void LinkCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = modelControl != null && modelControl.CanLink(true);
+        }
+
+        private void UnlinkCmd_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            modelControl.Link(false);
+        }
+
+        private void UnlinkCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = modelControl != null && modelControl.CanLink(false);
         }
 
         private void SaveModelToFile(string fileName)
@@ -354,43 +442,6 @@ namespace Hadronium
             }
         }
 
-        private void SaveCmdExecuted(object sender, ExecutedRoutedEventArgs e)
-        {
-            SaveFileDialog fileDialog = new SaveFileDialog();
-            PrepareDialog(fileDialog, true);
-            if (fileDialog.ShowDialog(this).Value)
-            {
-                switch (fileDialog.FilterIndex)
-                {
-                    case 1:
-                        SaveModelToFile(fileDialog.FileName);
-                        break;
-                    case 2:
-                        ExportModelToFile(fileDialog.FileName);
-                        break;
-                }
-            }
-        }
-
-        private void OpenCmdExecuted(object sender, ExecutedRoutedEventArgs e)
-        {
-            OpenFileDialog fileDialog = new OpenFileDialog();
-            PrepareDialog(fileDialog, false);
-            if (fileDialog.ShowDialog(this).Value)
-            {
-                switch (fileDialog.FilterIndex)
-                {
-                    case 1:
-                        LoadModelFromFile(fileDialog.FileName);
-                        break;
-                    case 2:
-                        ImportModelFromTextFile(fileDialog.FileName);
-                        break;
-                }
-                ModelRecreated();
-            }
-        }
-
 
         private bool rotating = false;
         private Point rotationStart;
@@ -411,46 +462,5 @@ namespace Hadronium
             rotating = false;
             Wheel.ReleaseMouseCapture();
         }
-
-        private void PinCmd_Executed(object sender, ExecutedRoutedEventArgs e)
-        {
-            modelControl.Pin(true);
-        }
-
-        private void PinCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
-        {
-            e.CanExecute = modelControl != null && modelControl.CanPin(true);
-        }
-
-        private void UnpinCmd_Executed(object sender, ExecutedRoutedEventArgs e)
-        {
-            modelControl.Pin(false);
-        }
-
-        private void UnpinCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
-        {
-            e.CanExecute = modelControl != null && modelControl.CanPin(false);
-        }
-
-        private void LinkCmd_Executed(object sender, ExecutedRoutedEventArgs e)
-        {
-            modelControl.Link(true);
-        }
-
-        private void LinkCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
-        {
-            e.CanExecute = modelControl != null && modelControl.CanLink(true);
-        }
-
-        private void UnlinkCmd_Executed(object sender, ExecutedRoutedEventArgs e)
-        {
-            modelControl.Link(false);
-        }
-
-        private void UnlinkCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
-        {
-            e.CanExecute = modelControl != null && modelControl.CanLink(false);
-        }
-
     }
 }
