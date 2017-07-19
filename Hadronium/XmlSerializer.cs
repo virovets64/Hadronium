@@ -139,7 +139,9 @@ namespace Hadronium
       var doc = new XmlDocument();
       doc.Load(fileName);
       var rootNode = doc.DocumentElement;
-      var model = new Model(2);
+      int dimension = int.Parse(read(rootNode, "Dimension", "2"));
+
+      var model = new Model(dimension);
       foreach (XmlNode particleNode in rootNode.SelectNodes("Particle"))
       {
         model.Particles.Add(readParticle(particleNode, model.Dimension));
@@ -163,6 +165,7 @@ namespace Hadronium
       var doc = new XmlDocument();
       doc.AppendChild(doc.CreateXmlDeclaration("1.0", "utf-8", null));
       var rootNode = doc.AppendChild(doc.CreateElement("Hadronium"));
+      write(rootNode, "Dimension", model.Dimension.ToString());
       foreach (var prop in properties)
         write(rootNode, prop.description, prop.target);
 
