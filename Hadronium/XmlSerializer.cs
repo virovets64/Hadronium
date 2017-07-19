@@ -2,30 +2,25 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Media;
-using System.Xml;
+using System.Xml.Linq;
 
 namespace Hadronium
 {
   class XmlSerializer
   {
-    private static string read(XmlNode node, string attrName, string defValue = null)
+    private static string read(XElement node, string attrName, string defValue = null)
     {
-      var attr = node.Attributes[attrName];
+      var attr = node.Attribute(attrName);
       if (attr == null)
         return defValue;
       return attr.Value;
     }
 
-    private static XmlNode write(XmlNode node, string name, string value, string defValue = null)
+    private static void write(XElement node, string name, string value, string defValue = null)
     {
-      if (value == defValue)
-        return null;
-      var result = node.OwnerDocument.CreateAttribute(name);
-      result.Value = value;
-      return node.Attributes.Append(result);
+      if (value != defValue)
+        node.Add(new XAttribute(name, value));
     }
 
     private static double stringToDouble(string s)
@@ -40,7 +35,7 @@ namespace Hadronium
 
     private static String[] CoordNames = new String[] { "X", "Y", "Z" };
 
-    private static void read(XmlNode node, ref double[] result)
+    private static void read(XElement node, ref double[] result)
     {
       if (node == null)
         return;
@@ -48,15 +43,15 @@ namespace Hadronium
         result[i] = stringToDouble(read(node, CoordNames[i]));
     }
 
-    private static XmlNode write(XmlNode node, string name, double[] value)
+    private static void write(XElement node, string name, double[] value)
     {
-      var result = node.AppendChild(node.OwnerDocument.CreateElement(name));
+      var newElement = new XElement(name);
       for (int i = 0; i < value.Length; i++)
-        write(result, CoordNames[i], doubleToString(value[i]));
-      return result;
+        write(newElement, CoordNames[i], doubleToString(value[i]));
+      node.Add(newElement);
     }
 
-    private static void read(XmlNode node, ref Color result)
+    private static void read(XElement node, ref Color result)
     {
       if (node == null)
         return;
@@ -66,52 +61,61 @@ namespace Hadronium
       result.A = byte.Parse(read(node, "A", "255"));
     }
 
-    private static XmlNode write(XmlNode node, string name, Color value)
+    private static void write(XElement node, string name, Color value)
     {
-      var result = node.AppendChild(node.OwnerDocument.CreateElement(name));
-      write(result, "R", value.R.ToString());
-      write(result, "G", value.G.ToString());
-      write(result, "B", value.B.ToString());
-      write(result, "A", value.A.ToString(), "255");
-      return result;
+      var newElement = new XElement(name);
+      write(newElement, "R", value.R.ToString());
+      write(newElement, "G", value.G.ToString());
+      write(newElement, "B", value.B.ToString());
+      write(newElement, "A", value.A.ToString(), "255");
+      node.Add(newElement);
     }
 
-    private static Particle readParticle(XmlNode node, int dimension)
+    private static Particle readParticle(XElement node, int dimension)
     {
       var result = new Particle(dimension);
       result.Name = read(node, "Id");
       result.Mass = stringToDouble(read(node, "Mass", "1"));
-      read(node.SelectSingleNode("Position"), ref result.Position);
-      read(node.SelectSingleNode("Velocity"), ref result.Velocity);
-      read(node.SelectSingleNode("FillColor"), ref result.FillColor);
-      read(node.SelectSingleNode("StrokeColor"), ref result.StrokeColor);
+      read(node.Element("Position"), ref result.Position);
+      read(node.Element("Velocity"), ref result.Velocity);
+      read(node.Element("FillColor"), ref result.FillColor);
+      read(node.Element("StrokeColor"), ref result.StrokeColor);
       return result;
     }
     
-    private static Particle readParticleRef(XmlNode node, string name, Model model)
+    private static void write(XElement node, string name, Particle value)
     {
-      var attr = node.Attributes[name + ".Name"];
+      var newElement = new XElement(name);
+      write(newElement, "Id", value.Name, null);
+      write(newElement, "Mass", doubleToString(value.Mass), "1");
+      write(newElement, "Position", value.Position);
+      write(newElement, "Velocity", value.Velocity);
+      write(newElement, "FillColor", value.FillColor);
+      write(newElement, "StrokeColor", value.StrokeColor);
+      node.Add(newElement);
+    }
+
+    private static Particle readParticleRef(XElement node, string name, Model model)
+    {
+      var attr = node.Attribute(name + ".Name");
       if (attr != null)
         return model.GetParticle(attr.Value);
-      attr = node.Attributes[name + ".Number"];
+      attr = node.Attribute(name + ".Number");
       if (attr != null)
         return model.Particles[int.Parse(attr.Value)];
       throw new Exception("Link read error");
     }
 
-    private static XmlNode write(XmlNode node, string name, Particle value)
+    private static Link readLink(XElement node, Model model)
     {
-      var result = node.AppendChild(node.OwnerDocument.CreateElement(name));
-      write(result, "Id", value.Name, null);
-      write(result, "Mass", doubleToString(value.Mass), "1");
-      write(result, "Position", value.Position);
-      write(result, "Velocity", value.Velocity);
-      write(result, "FillColor", value.FillColor);
-      write(result, "StrokeColor", value.StrokeColor);
-      return result;
+      var link = new Link(
+        readParticleRef(node, "A", model),
+        readParticleRef(node, "B", model),
+        double.Parse(read(node, "Strength", "1")));
+      return link;
     }
 
-    private static void writeParticleRef(XmlNode node, string name, Model model, Particle particle)
+    private static void writeParticleRef(XElement node, string name, Model model, Particle particle)
     {
       if (!String.IsNullOrEmpty(particle.Name))
         write(node, name + ".Name", particle.Name);
@@ -119,66 +123,68 @@ namespace Hadronium
         write(node, name + ".Number", model.GetParticleIndex(particle).ToString());
     }
 
-    private static void read(XmlNode node, PropertyDescription prop, object target)
+    private static void write(XElement node, string name, Link link, Model model)
     {
-      XmlNode propNode = node.SelectSingleNode(string.Format("Property[@Name='{0}']", prop.Name));
-      if (propNode != null)
-        prop.SetValue(target, stringToDouble(propNode.Attributes["Value"].Value));
+      var linkNode = new XElement(name);
+      writeParticleRef(linkNode, "A", model, link.A);
+      writeParticleRef(linkNode, "B", model, link.B);
+      write(linkNode, "Strength", link.Strength.ToString(), "1");
+      node.Add(linkNode);
     }
 
-    private static XmlNode write(XmlNode node, PropertyDescription prop, object target)
+    private static void read(XElement node, PropertyInstance prop)
     {
-      var result = node.AppendChild(node.OwnerDocument.CreateElement("Property"));
-      write(result, "Name", prop.Name);
-      write(result, "Value", doubleToString((double)prop.GetValue(target)));
-      return result;
+      var propNode = node.Elements("Property").FirstOrDefault(x => x.Attribute("Name").Value == prop.description.Name);
+      if (propNode != null)
+        prop.description.SetValue(prop.target, stringToDouble(propNode.Attribute("Value").Value));
+    }
+
+    private static void write(XElement node, PropertyInstance prop)
+    {
+      var propNode = new XElement("Property");
+      write(propNode, "Name", prop.description.Name);
+      write(propNode, "Value", doubleToString((double)prop.description.GetValue(prop.target)));
+      node.Add(propNode);
     }
 
     public static Model readModel(string fileName, IEnumerable<PropertyInstance> properties)
     {
-      var doc = new XmlDocument();
-      doc.Load(fileName);
-      var rootNode = doc.DocumentElement;
+      var doc = XDocument.Load(fileName);
+      var rootNode = doc.Root;
       int dimension = int.Parse(read(rootNode, "Dimension", "2"));
 
       var model = new Model(dimension);
-      foreach (XmlNode particleNode in rootNode.SelectNodes("Particle"))
-      {
-        model.Particles.Add(readParticle(particleNode, model.Dimension));
-      }
-      foreach (var prop in properties)
-        read(rootNode, prop.description, prop.target);
 
-      foreach (XmlNode linkNode in rootNode.SelectNodes("Link"))
-      {
-        var link = new Link(
-          readParticleRef(linkNode, "A", model),
-          readParticleRef(linkNode, "B", model),
-          double.Parse(read(linkNode, "Strength", "1")));
-        model.Links.Add(link);
-      }
+      foreach (var prop in properties)
+        read(rootNode, prop);
+
+      foreach (var particleNode in rootNode.Elements("Particle"))
+        model.Particles.Add(readParticle(particleNode, model.Dimension));
+      
+      foreach (var linkNode in rootNode.Elements("Link"))
+        model.Links.Add(readLink(linkNode, model));
+
       return model;
     }
 
+
     public static void writeModel(string fileName, Model model, IEnumerable<PropertyInstance> properties)
     {
-      var doc = new XmlDocument();
-      doc.AppendChild(doc.CreateXmlDeclaration("1.0", "utf-8", null));
-      var rootNode = doc.AppendChild(doc.CreateElement("Hadronium"));
-      write(rootNode, "Dimension", model.Dimension.ToString());
+      var doc = new XDocument(
+        new XElement("Hadronium", 
+          new XAttribute("Dimension", model.Dimension)));
+
       foreach (var prop in properties)
-        write(rootNode, prop.description, prop.target);
+        write(doc.Root, prop);
 
       foreach (var p in model.Particles)
-        write(rootNode, "Particle", p);
-      foreach (var l in model.Links)
-      {
-        var linkNode = rootNode.AppendChild(doc.CreateElement("Link"));
-        writeParticleRef(linkNode, "A", model, l.A);
-        writeParticleRef(linkNode, "B", model, l.B);
-        write(linkNode, "Strength", l.Strength.ToString(), "1");
-      }
+        write(doc.Root, "Particle", p);
+
+      foreach (var link in model.Links)
+        write(doc.Root, "Link", link, model);
+
       doc.Save(fileName);
     }
+
   }
 }

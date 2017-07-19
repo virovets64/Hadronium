@@ -6,11 +6,6 @@ using System.Runtime.Serialization;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Globalization;
-//using System.Runtime.Serialization.Formatters.Soap;
-#if Model3D
-using System.Windows.Media.Media3D;
-#endif
-using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
 using System.Linq;
 using Microsoft.Win32;
