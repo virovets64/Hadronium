@@ -34,6 +34,17 @@ namespace Hadronium
     }
   }
 
+  class PropertyInstance
+  {
+    public PropertyDescription description;
+    public object target;
+    public PropertyInstance(PropertyDescription description, object target)
+    {
+      this.description = description;
+      this.target = target;
+    }
+  }
+
 
   public class Exponent
   {

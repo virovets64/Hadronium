@@ -12,7 +12,7 @@ using System.Windows.Media.Media3D;
 #endif
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
-using System.Xml;
+using System.Linq;
 using Microsoft.Win32;
 using System;
 
@@ -262,87 +262,13 @@ namespace Hadronium
       e.CanExecute = model.Active;
     }
 
-    private XmlNode write(XmlNode node, string name, string value, string defValue = null)
-    {
-      if (value == defValue)
-        return null;
-      var result = node.OwnerDocument.CreateAttribute(name);
-      result.Value = value;
-      return node.Attributes.Append(result);
-    }
-    private string doubleToString(double x)
-    {
-      return x.ToString(CultureInfo.InvariantCulture);
-    }
-
-    private static String[] CoordNames = new String[] { "X", "Y", "Z" };
-
-    private XmlNode write(XmlNode node, string name, double[] value)
-    {
-      var result = node.AppendChild(node.OwnerDocument.CreateElement(name));
-      for (int i = 0; i < value.Length; i++)
-        write(result, CoordNames[i], doubleToString(value[i]));
-      return result;
-    }
-
-
-    private XmlNode write(XmlNode node, string name, Color value)
-    {
-      var result = node.AppendChild(node.OwnerDocument.CreateElement(name));
-      write(result, "R", value.R.ToString());
-      write(result, "G", value.G.ToString());
-      write(result, "B", value.B.ToString());
-      write(result, "A", value.A.ToString(), "255");
-      return result;
-    }
-    private XmlNode write(XmlNode node, string name, Particle value)
-    {
-      var result = node.AppendChild(node.OwnerDocument.CreateElement(name));
-      write(result, "Id", value.Name, null);
-      write(result, "Mass", doubleToString(value.Mass), "1");
-      write(result, "Position", value.Position);
-      write(result, "Velocity", value.Velocity);
-      write(result, "FillColor", value.FillColor);
-      write(result, "StrokeColor", value.StrokeColor);
-      return result;
-    }
-    private void writeParticleRef(XmlNode node, string name, Model model, Particle particle)
-    {
-      if (!String.IsNullOrEmpty(particle.Name))
-        write(node, name + ".Name", particle.Name);
-      else
-        write(node, name + ".Number", model.GetParticleIndex(particle).ToString());
-    }
-    private XmlNode write(XmlNode node, PropertyDescription prop, object target)
-    {
-      var result = node.AppendChild(node.OwnerDocument.CreateElement("Property"));
-      write(result, "Name", prop.Name);
-      write(result, "Value", doubleToString((double)prop.GetValue(target)));
-      return result;
-    }
-
     private void saveModelToFile(string fileName)
     {
-      var doc = new XmlDocument();
-      doc.AppendChild(doc.CreateXmlDeclaration("1.0", "utf-8", null));
-      var rootNode = doc.AppendChild(doc.CreateElement("Hadronium"));
-      foreach (PropertyDescription prop in modelPropertyDescriptions)
-        write(rootNode, prop, model);
-      foreach (PropertyDescription prop in controlPropertyDescriptions)
-        write(rootNode, prop, modelControl);
+      var properties = modelPropertyDescriptions.Select(x => new PropertyInstance(x, model))
+        .Concat(controlPropertyDescriptions.Select(x => new PropertyInstance(x, modelControl)));
 
-      foreach (var p in model.Particles)
-        write(rootNode, "Particle", p);
-      foreach (var l in model.Links)
-      {
-        var linkNode = rootNode.AppendChild(doc.CreateElement("Link"));
-        writeParticleRef(linkNode, "A", model, l.A);
-        writeParticleRef(linkNode, "B", model, l.B);
-        write(linkNode, "Strength", l.Strength.ToString(), "1");
-      }
-      doc.Save(fileName);
+      XmlSerializer.writeModel(fileName, model, properties);
     }
-
 
     private void exportModelToFile(string fileName)
     {
@@ -354,86 +280,12 @@ namespace Hadronium
       }
     }
 
-    private string read(XmlNode node, string attrName, string defValue = null)
-    {
-      var attr = node.Attributes[attrName];
-      if (attr == null)
-        return defValue;
-      return attr.Value;
-    }
-
-    private double stringToDouble(string s)
-    {
-      return double.Parse(s, CultureInfo.InvariantCulture);
-    }
-    private void read(XmlNode node, ref double[] result)
-    {
-      if (node == null)
-        return;
-      for (int i = 0; i < result.Length; i++)
-        result[i] = stringToDouble(read(node, CoordNames[i]));
-    }
-    
-    private void read(XmlNode node, ref Color result)
-    {
-      if (node == null)
-        return;
-      result.R = byte.Parse(read(node, "R"));
-      result.G = byte.Parse(read(node, "G"));
-      result.B = byte.Parse(read(node, "B"));
-      result.A = byte.Parse(read(node, "A", "255"));
-    }
-
-    private Particle readParticle(XmlNode node)
-    {
-      var result = new Particle(model.Dimension);
-      result.Name = read(node, "Id");
-      result.Mass = stringToDouble(read(node, "Mass", "1"));
-      read(node.SelectSingleNode("Position"), ref result.Position);
-      read(node.SelectSingleNode("Velocity"), ref result.Velocity);
-      read(node.SelectSingleNode("FillColor"), ref result.FillColor);
-      read(node.SelectSingleNode("StrokeColor"), ref result.StrokeColor);
-      return result;
-    }
-    private Particle readParticleRef(XmlNode node, string name, Model model)
-    {
-      var attr = node.Attributes[name + ".Name"];
-      if (attr != null)
-        return model.GetParticle(attr.Value);
-      attr = node.Attributes[name + ".Number"];
-      if (attr != null)
-        return model.Particles[int.Parse(attr.Value)];
-      throw new Exception("Link read error");
-    }
-    private void read(XmlNode node, PropertyDescription prop, object target)
-    {
-      XmlNode propNode = node.SelectSingleNode(string.Format("Property[@Name='{0}']", prop.Name));
-      if (propNode != null)
-        prop.SetValue(target, stringToDouble(propNode.Attributes["Value"].Value));
-    }
-
     private void loadModelFromFile(string fileName)
     {
-      var doc = new XmlDocument();
-      doc.Load(fileName);
-      model = new Model(2);
-      var rootNode = doc.DocumentElement;
-      foreach (XmlNode particleNode in rootNode.SelectNodes("Particle"))
-      {
-        model.Particles.Add(readParticle(particleNode));
-      }
-      foreach (PropertyDescription prop in modelPropertyDescriptions)
-        read(rootNode, prop, model);
-      foreach (PropertyDescription prop in controlPropertyDescriptions)
-        read(rootNode, prop, modelControl);
-      foreach (XmlNode linkNode in rootNode.SelectNodes("Link"))
-      {
-        var link = new Link(
-          readParticleRef(linkNode, "A", model), 
-          readParticleRef(linkNode, "B", model), 
-          double.Parse(read(linkNode, "Strength", "1")));
-        model.Links.Add(link);
-      }
+      var properties = modelPropertyDescriptions.Select(x => new PropertyInstance(x, model))
+        .Concat(controlPropertyDescriptions.Select(x => new PropertyInstance(x, modelControl)));
+
+      model = XmlSerializer.readModel(fileName, properties);
     }
 
     private void importModelFromTextFile(string fileName)
