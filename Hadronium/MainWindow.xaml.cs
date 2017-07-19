@@ -47,6 +47,7 @@ namespace Hadronium
             new PropertyDescription("Accuracy"          ,  50.0,  0.1,  1E5, new LogarithmicConverter()),
         };
     private static PropertyDescription[] controlPropertyDescriptions = new PropertyDescription[] { 
+            new PropertyDescription("Rotation"          ,   0.0, -180.0, 180.0),
             new PropertyDescription("ParticleSize"      ,   8.0, 0.8, 800.0, new LogarithmicConverter()),
             new PropertyDescription("TextSize"          ,  12.0, 0.12, 1200.0, new LogarithmicConverter()),
             new PropertyDescription("RefreshPeriod"     , 0.035, 0.0035, 0.35, new LogarithmicConverter(), "RenderElapsedTime"),
@@ -150,8 +151,11 @@ namespace Hadronium
       var slider = sender as Slider;
       Binding binding = slider.GetBindingExpression(Slider.ValueProperty).ParentBinding;
       var propDescr = binding.ConverterParameter as PropertyDescription;
-      var value = binding.Converter.Convert(propDescr.DefaultValue, typeof(double), propDescr, CultureInfo.InvariantCulture);
-      (sender as Slider).Value = (double)value;
+      var converter = binding.Converter;
+      if (converter != null)
+        (sender as Slider).Value = (double)converter.Convert(propDescr.DefaultValue, typeof(double), propDescr, CultureInfo.InvariantCulture);
+      else
+        (sender as Slider).Value = (double)propDescr.DefaultValue;
     }
 
     private void createTunePanel()

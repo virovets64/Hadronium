@@ -11,6 +11,12 @@ namespace Hadronium
   {
     protected abstract void setRenderSize(Size size);
     protected abstract void setOffset(Vector value);
+    protected virtual void setRotation(double value)
+    { }
+    protected virtual double getRotation()
+    {
+      return 0;
+    }
     public abstract Point ToScreen(double[] d);
     public abstract double[] ToWorld(Point p);
     public abstract double[] ToWorld(Vector v);
@@ -23,6 +29,12 @@ namespace Hadronium
     {
       get { return scale / PixelsPerMeter; }
       set { scale = value * PixelsPerMeter; }
+    }
+
+    public double Rotation
+    {
+      get { return getRotation(); }
+      set { setRotation(value); }
     }
 
     public bool changeScale(double newScale, Point fixedPoint)
@@ -112,36 +124,61 @@ namespace Hadronium
 
   class Transform3D : Transform
   {
-//    private double rotationX = 0;
+    private double rotX = 0;
 
     protected override void setRenderSize(Size size)
     {
+      offset.X = size.Width / 2;
     }
     protected override void setOffset(Vector value)
     {
       offset = value;
     }
+
+    protected override void setRotation(double value)
+    {
+      rotX = value;
+    }
+
+    protected override double getRotation()
+    {
+      return rotX;
+    }
+    
     public override Point ToScreen(double[] d)
     {
+      var cos = Math.Cos(rotX);
+      var sin = Math.Sin(rotX);
       return new Point(
-        scale * d[1] + offset.X,
+        scale * (d[1] * cos - d[2] * sin) + offset.X,
         scale * d[0] + offset.Y);
     }
     public override double[] ToWorld(Point p)
     {
-      return new double[2] 
+      var cos = Math.Cos(rotX);
+      var sin = Math.Sin(rotX);
+      return new double[3] 
       { 
         (p.Y - offset.Y) / scale,
-        (p.X - offset.X) / scale,
+        (p.X - offset.X) * cos / scale,
+       -(p.X - offset.X) * sin / scale
       };
     }
     public override double[] ToWorld(Vector v)
     {
-      return new double[2] 
+      var cos = Math.Cos(rotX);
+      var sin = Math.Sin(rotX);
+      return new double[3] 
       { 
         v.Y / scale,
-        v.X / scale,
+        v.X * cos / scale,
+       -v.X * sin / scale
       };
+    }
+    public double Rotation
+    {
+      get { return rotX; }
+      set { rotX = value; }
     }
   }
 

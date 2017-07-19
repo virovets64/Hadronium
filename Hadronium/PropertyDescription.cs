@@ -67,6 +67,7 @@ namespace Hadronium
     }
   }
 
+
   [ValueConversion(typeof(double), typeof(double))]
   // Converts by formula: f(y) = a*exp(k*y) + b, wherein
   // f(0) = min, f(1) = max, f(0.5) = default

@@ -52,6 +52,21 @@ namespace Hadronium
       }
     }
 
+    public double Rotation
+    {
+      get 
+      { 
+        return transform.Rotation * 180 / Math.PI; 
+      }
+      set
+      {
+        transform.Rotation = value / 180 * Math.PI;
+        InvalidateVisual();
+        if (PropertyChanged != null)
+          PropertyChanged(this, new PropertyChangedEventArgs("Rotation"));
+      }
+    }
+
     public double ParticleSize
     {
       get { return particleSize; }
