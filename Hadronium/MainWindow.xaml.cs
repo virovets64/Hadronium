@@ -22,7 +22,6 @@ namespace Hadronium
     {
         private const string modelFileExt = ".hadronium";
         private Model model = new Model(2);
-        private ModelControl modelControl;
         private StackPanel tunePanel = new StackPanel();
 
         public static RoutedCommand NewCmd = new RoutedCommand();
@@ -175,9 +174,9 @@ namespace Hadronium
         public MainWindow()
         {
             InitializeComponent();
-            modelControl = new ModelControl();
+//            modelControl = new ModelControl();
             modelControl.ClipToBounds = true;
-            modelPlaceholder.Content = modelControl;
+//            modelPlaceholder.Content = modelControl;
             try
             {
                 LoadModelFromFile(autosaveFilename);

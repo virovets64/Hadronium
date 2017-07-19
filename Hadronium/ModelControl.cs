@@ -266,6 +266,8 @@ namespace Hadronium
 
         private void TimerProc(Object state, EventArgs e)
         {
+            if (model == null)
+                return;
             if (model.ActualStepCount != modelStepCount)
             {
                 model.Refresh();
@@ -303,6 +305,9 @@ namespace Hadronium
 
         protected override void OnRender(System.Windows.Media.DrawingContext drawingContext)
         {
+            if (model == null)
+                return;
+
             renderStopwatch.Restart();
             Pen forwardPen = new Pen(Brushes.Silver, 1);
             Pen backwardPen = new Pen(Brushes.Pink, 1);

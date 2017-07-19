@@ -12,7 +12,7 @@
     <CommandBinding Command="{x:Static custom:MainWindow.StopCmd}" Executed="StopCmd_Executed" CanExecute="StopCmd_CanExecute" />
     <CommandBinding Command="{x:Static custom:MainWindow.PinCmd}" Executed="PinCmd_Executed" CanExecute="PinCmd_CanExecute" />
     <CommandBinding Command="{x:Static custom:MainWindow.UnpinCmd}" CanExecute="UnpinCmd_CanExecute" Executed="UnpinCmd_Executed" />
-    <CommandBinding Command="{x:Static custom:MainWindow.LinkCmd}" Executed="LinkCmd_Executed" CanExecute="LinkCmd_CanExecute" />
+    <CommandBinding Command="{x:Static custom:MainWindow.LinkCmd}" Executed="LinkCmd_Executed" CanExecute="LinkCmd_CanExecute"/>
     <CommandBinding Command="{x:Static custom:MainWindow.UnlinkCmd}" CanExecute="UnlinkCmd_CanExecute" Executed="UnlinkCmd_Executed" />
     <CommandBinding Command="{x:Static custom:MainWindow.Deselect}" Executed="DeselectCmd_Executed" />
     <CommandBinding Command="Open" Executed="OpenCmd_Executed" />
@@ -64,6 +64,6 @@
         </StackPanel>
       </StackPanel>
     </ScrollViewer>
-    <ContentControl Name="modelPlaceholder"/>
+    <custom:ModelControl x:Name="modelControl"/>
   </DockPanel>
 </Window>
