@@ -60,7 +60,7 @@ namespace Hadronium
             new PropertyDescription("RenderElapsedTime"  ,   1.0, 1E-10, 1E5,  new LogarithmicConverter())
         };
 
-        private void addControls(object source, PropertyDescription[] propertyDescriptions, bool statistics, Color color, string header)
+        private void AddControls(object source, PropertyDescription[] propertyDescriptions, bool statistics, Color color, string header)
         {
             var expander = new Expander();
             expander.Header = header;
@@ -158,7 +158,7 @@ namespace Hadronium
                 (sender as Slider).Value = (double)propDescr.DefaultValue;
         }
 
-        private void createTunePanel()
+        private void CreateTunePanel()
         {
             if (tunePanel != null)
                 controlPanel.Children.Remove(tunePanel);
@@ -166,9 +166,9 @@ namespace Hadronium
             tunePanel.Orientation = Orientation.Vertical;
             controlPanel.Children.Add(tunePanel);
 
-            addControls(model, modelPropertyDescriptions, false, Color.FromRgb(255, 240, 230), "Model");
-            addControls(modelControl, controlPropertyDescriptions, false, Color.FromRgb(240, 230, 255), "View");
-            addControls(model, performancePropertyDescriptions, true, Color.FromRgb(230, 255, 240), "Performance");
+            AddControls(model, modelPropertyDescriptions, false, Color.FromRgb(255, 240, 230), "Model");
+            AddControls(modelControl, controlPropertyDescriptions, false, Color.FromRgb(240, 230, 255), "View");
+            AddControls(model, performancePropertyDescriptions, true, Color.FromRgb(230, 255, 240), "Performance");
         }
 
         public MainWindow()
@@ -179,26 +179,26 @@ namespace Hadronium
             modelPlaceholder.Content = modelControl;
             try
             {
-                loadModelFromFile(autosaveFilename);
+                LoadModelFromFile(autosaveFilename);
             }
             catch
             {
                 model = new Model(2);
             }
-            modelRecreated();
+            ModelRecreated();
         }
 
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             model.Stop();
-            saveModelToFile(autosaveFilename);
+            SaveModelToFile(autosaveFilename);
         }
 
         private void NewCmdExecuted(object sender, ExecutedRoutedEventArgs e)
         {
             model = new Model(int.Parse(e.Parameter.ToString()));
-            modelRecreated();
+            ModelRecreated();
         }
 
         private void NewCmdCanExecute(object sender, CanExecuteRoutedEventArgs e)
@@ -209,7 +209,7 @@ namespace Hadronium
         private void ClearCmdExecuted(object sender, ExecutedRoutedEventArgs e)
         {
             modelControl.Model.Clear();
-            modelRecreated();
+            ModelRecreated();
         }
 
         private void ClearCmdCanExecute(object sender, CanExecuteRoutedEventArgs e)
@@ -225,7 +225,7 @@ namespace Hadronium
             if (dialog.ShowDialog() == true)
             {
                 modelControl.NewRandomModel(dialog.ParticleCount, dialog.LinkCount);
-                modelRecreated();
+                ModelRecreated();
             }
         }
         
@@ -264,15 +264,15 @@ namespace Hadronium
             e.CanExecute = model.Active;
         }
 
-        private void saveModelToFile(string fileName)
+        private void SaveModelToFile(string fileName)
         {
             var properties = modelPropertyDescriptions.Select(x => new PropertyInstance(x, model))
               .Concat(controlPropertyDescriptions.Select(x => new PropertyInstance(x, modelControl)));
 
-            XmlSerializer.writeModel(fileName, model, properties);
+            XmlSerializer.WriteModel(fileName, model, properties);
         }
 
-        private void exportModelToFile(string fileName)
+        private void ExportModelToFile(string fileName)
         {
             using (FileStream outStream = new FileStream(fileName, FileMode.Create))
             {
@@ -282,15 +282,15 @@ namespace Hadronium
             }
         }
 
-        private void loadModelFromFile(string fileName)
+        private void LoadModelFromFile(string fileName)
         {
             var properties = modelPropertyDescriptions.Select(x => new PropertyInstance(x, model))
               .Concat(controlPropertyDescriptions.Select(x => new PropertyInstance(x, modelControl)));
 
-            model = XmlSerializer.readModel(fileName, properties);
+            model = XmlSerializer.ReadModel(fileName, properties);
         }
 
-        private void importModelFromTextFile(string fileName)
+        private void ImportModelFromTextFile(string fileName)
         {
             var reader = new StreamReader(fileName);
             model = new Model(2);
@@ -307,28 +307,28 @@ namespace Hadronium
                         {
                             particle = new Particle(model.Dimension);
                             particle.Name = items[0];
-                            model.Particles.Add(particle);
+                            model.AddParticle(particle);
                         }
                         if (items.Length > 1)
                         {
                             var link = new Link(particle, model.GetParticle(items[1]));
-                            model.Links.Add(link);
+                            model.AddLink(link);
                         }
                     }
 
                 }
             }
-            model.RandomizePositions(modelControl.getInitialRect());
+            model.RandomizePositions(modelControl.GetInitialRect());
         }
 
-        private void modelRecreated()
+        private void ModelRecreated()
         {
             modelControl.Model = model;
-            createTunePanel();
+            CreateTunePanel();
             modelControl.InvalidateVisual();
         }
 
-        private void prepareDialog(FileDialog fileDialog, bool forSave)
+        private void PrepareDialog(FileDialog fileDialog, bool forSave)
         {
             fileDialog.DefaultExt = modelFileExt;
             fileDialog.Filter = string.Format("Hadronium files ({0})|*{0}", modelFileExt);
@@ -357,16 +357,16 @@ namespace Hadronium
         private void SaveCmdExecuted(object sender, ExecutedRoutedEventArgs e)
         {
             SaveFileDialog fileDialog = new SaveFileDialog();
-            prepareDialog(fileDialog, true);
+            PrepareDialog(fileDialog, true);
             if (fileDialog.ShowDialog(this).Value)
             {
                 switch (fileDialog.FilterIndex)
                 {
                     case 1:
-                        saveModelToFile(fileDialog.FileName);
+                        SaveModelToFile(fileDialog.FileName);
                         break;
                     case 2:
-                        exportModelToFile(fileDialog.FileName);
+                        ExportModelToFile(fileDialog.FileName);
                         break;
                 }
             }
@@ -375,19 +375,19 @@ namespace Hadronium
         private void OpenCmdExecuted(object sender, ExecutedRoutedEventArgs e)
         {
             OpenFileDialog fileDialog = new OpenFileDialog();
-            prepareDialog(fileDialog, false);
+            PrepareDialog(fileDialog, false);
             if (fileDialog.ShowDialog(this).Value)
             {
                 switch (fileDialog.FilterIndex)
                 {
                     case 1:
-                        loadModelFromFile(fileDialog.FileName);
+                        LoadModelFromFile(fileDialog.FileName);
                         break;
                     case 2:
-                        importModelFromTextFile(fileDialog.FileName);
+                        ImportModelFromTextFile(fileDialog.FileName);
                         break;
                 }
-                modelRecreated();
+                ModelRecreated();
             }
         }
 

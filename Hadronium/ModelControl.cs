@@ -87,7 +87,7 @@ namespace Hadronium
             set
             {
                 textSize = value;
-                updateFontSize();
+                UpdateFontSize();
                 InvalidateVisual();
                 if (PropertyChanged != null)
                     PropertyChanged(this, new PropertyChangedEventArgs("TextSize"));
@@ -179,7 +179,7 @@ namespace Hadronium
 
         public void NewRandomModel(int particleCount, int linkCount)
         {
-            model.AddRandomParticles(particleCount, linkCount, getInitialRect());
+            model.AddRandomParticles(particleCount, linkCount, GetInitialRect());
 
             foreach (var p in model.Particles)
             {
@@ -246,7 +246,7 @@ namespace Hadronium
         {
             base.OnInitialized(e);
             //            model.Changed += new EventHandler(model_Changed);
-            myTimer = new DispatcherTimer(new TimeSpan((long)(refreshPeriod * 10000)), DispatcherPriority.SystemIdle, timerProc, Dispatcher);
+            myTimer = new DispatcherTimer(new TimeSpan((long)(refreshPeriod * 10000)), DispatcherPriority.SystemIdle, TimerProc, Dispatcher);
             createPinImage();
 
         }
@@ -254,7 +254,7 @@ namespace Hadronium
         SelectionAdorner selectionAdorner;
 
 
-        private void timerProc(Object state, EventArgs e)
+        private void TimerProc(Object state, EventArgs e)
         {
             if (model.ActualStepCount != modelStepCount)
             {
@@ -264,7 +264,7 @@ namespace Hadronium
             }
         }
 
-        private Particle particleAtPoint(Point p)
+        private Particle ParticleAtPoint(Point p)
         {
             for (int i = model.Particles.Count - 1; i >= 0; i--)
             {
@@ -276,7 +276,7 @@ namespace Hadronium
             return null;
         }
 
-        private void updateFontSize()
+        private void UpdateFontSize()
         {
             if (model != null)
             {
@@ -361,7 +361,7 @@ namespace Hadronium
                 case MouseButton.Left:
                     Point p = e.GetPosition(this);
                     mouseDownPosition = p;
-                    var hitParticle = particleAtPoint(p);
+                    var hitParticle = ParticleAtPoint(p);
                     if (Keyboard.IsKeyDown(Key.LeftCtrl))
                     {
                         if (hitParticle == null)
@@ -369,7 +369,7 @@ namespace Hadronium
                             var newParticle = new Particle(model.Dimension);
                             newParticle.Position = transform.ToWorld(mouseDownPosition);
                             newParticle.FillColor = getRandomColor();
-                            model.Particles.Add(newParticle);
+                            model.AddParticle(newParticle);
                             InvalidateVisual();
                         }
                         else
@@ -497,9 +497,9 @@ namespace Hadronium
             ReleaseMouseCapture();
         }
 
-        private void changeScale(double newViewScale, Point p)
+        private void ChangeScale(double newViewScale, Point p)
         {
-            if (transform.changeScale(newViewScale, p))
+            if (transform.ChangeScale(newViewScale, p))
             {
                 if (PropertyChanged != null)
                     PropertyChanged(this, new PropertyChangedEventArgs("ViewScale"));
@@ -512,10 +512,10 @@ namespace Hadronium
             double coef = 1.1;
             if (e.Delta < 0)
                 coef = 1.0 / coef;
-            changeScale(transform.ViewScale * coef, e.GetPosition(this));
+            ChangeScale(transform.ViewScale * coef, e.GetPosition(this));
         }
 
-        public Box getInitialRect()
+        public Box GetInitialRect()
         {
             Size size = RenderSize;
             Rect rect = new Rect(size);
@@ -526,7 +526,7 @@ namespace Hadronium
 
         internal void RandomizePositions()
         {
-            model.RandomizePositions(getInitialRect());
+            model.RandomizePositions(GetInitialRect());
             InvalidateVisual();
         }
     }

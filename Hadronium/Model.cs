@@ -87,7 +87,7 @@ namespace Hadronium
 
         public Particle FindParticle(string name)
         {
-            foreach (var p in Particles)
+            foreach (var p in particles)
             {
                 if (p.Name == name)
                     return p;
@@ -95,22 +95,39 @@ namespace Hadronium
             return null;
         }
 
+        public void AddParticle(Particle particle)
+        {
+            particles.Add(particle);
+        }
+
         public Particle GetParticle(string name)
         {
-            return Particles.Find(x => x.Name == name);
+            return particles.Find(x => x.Name == name);
         }
 
         public int GetParticleIndex(Particle p)
         {
-            int result = Particles.IndexOf(p);
+            int result = particles.IndexOf(p);
             if (result == -1)
                 throw new Exception("Particle is not found");
             return result;
         }
 
         private Engine engine = new Engine();
-        public List<Particle> Particles = new List<Particle>();
-        public List<Link> Links = new List<Link>();
+
+        public IReadOnlyList<Particle> Particles
+        {
+            get {  return particles.AsReadOnly(); }
+        }
+
+        public IReadOnlyList<Link> Links
+        {
+            get { return links.AsReadOnly(); }
+        }
+
+        public List<Particle> particles = new List<Particle>();
+
+        public List<Link> links = new List<Link>();
         public event PropertyChangedEventHandler PropertyChanged;
 
         private void setProperty(string propertyName, ref double member, double value)
@@ -235,8 +252,8 @@ namespace Hadronium
 
         public void Clear()
         {
-            Particles.Clear();
-            Links.Clear();
+            particles.Clear();
+            links.Clear();
         }
 
         public void AddRandomParticles(int particleCount, int linkCount, Box zone)
@@ -253,7 +270,7 @@ namespace Hadronium
             }
             randomizeParticlePositions(newParticles, zone);
             var firstNewParticleIndex = Particles.Count;
-            Particles.AddRange(newParticles);
+            particles.AddRange(newParticles);
             for (int i = 0; i < linkCount; )
             {
                 var a = newParticles[random.Next(particleCount)];
@@ -305,40 +322,45 @@ namespace Hadronium
 
         public void RandomizePositions(Box zone)
         {
-            randomizeParticlePositions(Particles, zone);
+            randomizeParticlePositions(particles, zone);
         }
 
-        private Link findLink(Particle a, Particle b)
+        private Link FindLink(Particle a, Particle b)
         {
-            foreach (var l in Links)
+            foreach (var l in links)
                 if (l.A == a && l.B == b || l.A == b && l.B == a)
                     return l;
             return null;
+        }
+
+        public void AddLink(Link link)
+        {
+            links.Add(link);
         }
 
         public bool AddLink(Particle a, Particle b)
         {
             if (a == b)
                 return false;
-            if (findLink(a, b) != null)
+            if (FindLink(a, b) != null)
                 return false;
-            Links.Add(new Link(a, b));
+            links.Add(new Link(a, b));
             return true;
         }
 
         public bool RemoveLink(Particle a, Particle b)
         {
-            var link = findLink(a, b);
+            var link = FindLink(a, b);
             if (link == null)
                 return false;
-            Links.Remove(link);
+            links.Remove(link);
             return true;
         }
 
         public void RemoveParticle(Particle p)
         {
-            Links.RemoveAll(x => x.A == p || x.B == p);
-            Particles.Remove(p);
+            links.RemoveAll(x => x.A == p || x.B == p);
+            particles.Remove(p);
         }
 
         unsafe public void Refresh()

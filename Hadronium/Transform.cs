@@ -9,14 +9,14 @@ namespace Hadronium
 {
     abstract class Transform
     {
-        protected abstract void setRenderSize(Size size);
+        protected abstract void SetRenderSize(Size size);
 
-        protected abstract void setOffset(Vector value);
+        protected abstract void SetOffset(Vector value);
 
-        protected virtual void setRotation(double value)
+        protected virtual void SetRotation(double value)
         { }
 
-        protected virtual double getRotation()
+        protected virtual double GetRotation()
         {
             return 0;
         }
@@ -40,11 +40,11 @@ namespace Hadronium
 
         public double Rotation
         {
-            get { return getRotation(); }
-            set { setRotation(value); }
+            get { return GetRotation(); }
+            set { SetRotation(value); }
         }
 
-        public bool changeScale(double newScale, Point fixedPoint)
+        public bool ChangeScale(double newScale, Point fixedPoint)
         {
             if (ViewScale == newScale)
                 return false;
@@ -58,15 +58,15 @@ namespace Hadronium
         public Vector Offset
         {
             get { return offset; }
-            set { setOffset(value); }
+            set { SetOffset(value); }
         }
 
         public Size RenderSize
         {
-            set { setRenderSize(value); }
+            set { SetRenderSize(value); }
         }
 
-        public Vector offset = new Vector(0, 0);
+        protected Vector offset = new Vector(0, 0);
 
         protected double scale = PixelsPerMeter;
 
@@ -75,12 +75,12 @@ namespace Hadronium
 
     class Transform1D : Transform
     {
-        protected override void setOffset(Vector value)
+        protected override void SetOffset(Vector value)
         {
             offset.Y = value.Y;
         }
 
-        protected override void setRenderSize(Size size)
+        protected override void SetRenderSize(Size size)
         {
             offset.X = size.Width / 2;
         }
@@ -104,11 +104,11 @@ namespace Hadronium
 
     class Transform2D : Transform
     {
-        protected override void setRenderSize(Size size)
+        protected override void SetRenderSize(Size size)
         {
         }
 
-        protected override void setOffset(Vector value)
+        protected override void SetOffset(Vector value)
         {
             offset = value;
         }
@@ -144,22 +144,22 @@ namespace Hadronium
     {
         private double rotX = 0;
 
-        protected override void setRenderSize(Size size)
+        protected override void SetRenderSize(Size size)
         {
             offset.X = size.Width / 2;
         }
 
-        protected override void setOffset(Vector value)
+        protected override void SetOffset(Vector value)
         {
             offset = value;
         }
 
-        protected override void setRotation(double value)
+        protected override void SetRotation(double value)
         {
             rotX = value;
         }
 
-        protected override double getRotation()
+        protected override double GetRotation()
         {
             return rotX;
         }

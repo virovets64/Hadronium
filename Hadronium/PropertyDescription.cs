@@ -38,13 +38,13 @@ namespace Hadronium
 
     class PropertyInstance
     {
-        public PropertyDescription description;
-        public object target;
+        public PropertyDescription Description;
+        public object Target;
 
         public PropertyInstance(PropertyDescription description, object target)
         {
-            this.description = description;
-            this.target = target;
+            this.Description = description;
+            this.Target = target;
         }
     }
 
@@ -81,7 +81,7 @@ namespace Hadronium
     {
         Exponent exponent = null;
 
-        void initialize(object parameter)
+        void Initialize(object parameter)
         {
             if (exponent == null)
             {
@@ -92,13 +92,13 @@ namespace Hadronium
 
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            initialize(parameter);
+            Initialize(parameter);
             return exponent.Inverse((double)value);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            initialize(parameter);
+            Initialize(parameter);
             return exponent.Direct((double)value);
         }
     }
@@ -115,7 +115,7 @@ namespace Hadronium
             this.quarter = quarter;
         }
 
-        void initialize(object parameter)
+        void Initialize(object parameter)
         {
             if (exponent == null)
             {
@@ -127,7 +127,7 @@ namespace Hadronium
 
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            initialize(parameter);
+            Initialize(parameter);
 
             double y = (double)value;
             if (y > y0)
@@ -138,7 +138,7 @@ namespace Hadronium
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            initialize(parameter);
+            Initialize(parameter);
             double x = (double)value * 2 - 1;
             return x >= 0 ? exponent.Direct(x) : 2 * y0 - exponent.Direct(-x);
         }
