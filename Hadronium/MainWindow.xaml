@@ -4,7 +4,8 @@
         xmlns:custom="clr-namespace:Hadronium"
         Title="Hadronium" Width="800" Height="600" Closing="Window_Closing">
   <Window.CommandBindings>
-    <CommandBinding Command="{x:Static custom:MainWindow.NewCmd}" Executed="NewCmdExecuted" CanExecute="NewCmdCanExecute" />
+    <CommandBinding Command="{x:Static custom:MainWindow.NewCmd}" Executed="NewCmdExecuted" CanExecute="NewCmdCanExecute"/>
+    <CommandBinding Command="{x:Static custom:MainWindow.ClearCmd}" Executed="ClearCmdExecuted" CanExecute="ClearCmdCanExecute"/>
     <CommandBinding Command="{x:Static custom:MainWindow.RandomizeCmd}" Executed="RandomizeCmdExecuted" CanExecute="RandomizeCmdCanExecute" />
     <CommandBinding Command="{x:Static custom:MainWindow.AddParticlesCmd}" Executed="AddParticlesCmdExecuted" CanExecute="AddParticlesCmdCanExecute" />
     <CommandBinding Command="{x:Static custom:MainWindow.StartCmd}" Executed="StartCmdExecuted" CanExecute="StartCmdCanExecute" />
@@ -21,11 +22,16 @@
     <WrapPanel DockPanel.Dock="Top">
       <Menu>
         <MenuItem Header="_File">
-          <MenuItem Header="_New" Command="{x:Static custom:MainWindow.NewCmd}"/>
+          <MenuItem Header="_New">
+            <MenuItem Header="1-dimensional" Command="{x:Static custom:MainWindow.NewCmd}" CommandParameter="1"/>
+            <MenuItem Header="2-dimensional" Command="{x:Static custom:MainWindow.NewCmd}" CommandParameter="2"/>
+            <MenuItem Header="3-dimensional" Command="{x:Static custom:MainWindow.NewCmd}" CommandParameter="3"/>
+          </MenuItem>
           <MenuItem Header="_Open" Command="ApplicationCommands.Open"/>
           <MenuItem Header="_Save" Command="ApplicationCommands.Save"/>
         </MenuItem>
         <MenuItem Header="Edit">
+          <MenuItem Header="Clear" Command="{x:Static custom:MainWindow.ClearCmd}"/>
           <MenuItem Header="Add particles..." Command="{x:Static custom:MainWindow.AddParticlesCmd}"/>
           <MenuItem Header="Randomize particle positions" Command="{x:Static custom:MainWindow.RandomizeCmd}"/>
         </MenuItem>

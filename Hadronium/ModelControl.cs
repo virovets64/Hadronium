@@ -17,8 +17,27 @@ namespace Hadronium
     public event PropertyChangedEventHandler PropertyChanged;
     public Model Model
     {
-      get { return model; }
-      set { model = value; }
+      get 
+      { 
+        return model; 
+      }
+      set 
+      { 
+        model = value; 
+        switch(model.Dimension)
+        {
+          case 1:
+            transform = new Transform1D();
+            break;
+          case 2:
+            transform = new Transform2D();
+            break;
+          case 3:
+            transform = new Transform3D();
+            break;
+        }
+        transform.RenderSize = RenderSize;
+      }
     }
     public double RefreshPeriod
     {

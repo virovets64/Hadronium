@@ -26,11 +26,12 @@ namespace Hadronium
   public partial class MainWindow : Window
   {
     private const string modelFileExt = ".hadronium";
-    private Model model = new Model();
+    private Model model = new Model(2);
     private ModelControl modelControl;
     private StackPanel tunePanel = new StackPanel();
 
     public static RoutedCommand NewCmd = new RoutedCommand();
+    public static RoutedCommand ClearCmd = new RoutedCommand();
     public static RoutedCommand LoadCmd = new RoutedCommand();
     public static RoutedCommand RandomizeCmd = new RoutedCommand();
     public static RoutedCommand AddParticlesCmd = new RoutedCommand();
@@ -188,7 +189,7 @@ namespace Hadronium
       }
       catch
       {
-        model = new Model();
+        model = new Model(2);
       }
       modelRecreated();
     }
@@ -202,20 +203,25 @@ namespace Hadronium
 
     private void NewCmdExecuted(object sender, ExecutedRoutedEventArgs e)
     {
-      try
-      {
-        modelControl.Model.Clear();
-        modelRecreated();
-      }
-      catch (Exception x)
-      {
-        MessageBox.Show(x.Message);
-      }
+      model = new Model(int.Parse(e.Parameter.ToString()));
+      modelRecreated();
     }
     private void NewCmdCanExecute(object sender, CanExecuteRoutedEventArgs e)
     {
       e.CanExecute = !model.Active;
     }
+
+    private void ClearCmdExecuted(object sender, ExecutedRoutedEventArgs e)
+    {
+      modelControl.Model.Clear();
+      modelRecreated();
+    }
+
+    private void ClearCmdCanExecute(object sender, CanExecuteRoutedEventArgs e)
+    {
+      e.CanExecute = !model.Active;
+    }
+    
     private void AddParticlesCmdExecuted(object sender, ExecutedRoutedEventArgs e)
     {
       var dialog = new ParticleGenerationDialog();
@@ -410,7 +416,7 @@ namespace Hadronium
     {
       var doc = new XmlDocument();
       doc.Load(fileName);
-      model = new Model();
+      model = new Model(2);
       var rootNode = doc.DocumentElement;
       foreach (XmlNode particleNode in rootNode.SelectNodes("Particle"))
       {
@@ -433,7 +439,7 @@ namespace Hadronium
     private void importModelFromTextFile(string fileName)
     {
       var reader = new StreamReader(fileName);
-      model = new Model();
+      model = new Model(2);
       //			string content = reader.ReadToEnd();
       //            string[] lines = content.Split('\n');
       //            foreach(var line in lines)

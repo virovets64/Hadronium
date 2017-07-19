@@ -58,11 +58,12 @@ namespace Hadronium
 
   public class Model : INotifyPropertyChanged
   {
-    public Model()
+    public Model(int dimension)
     {
+      this.dimension = dimension;
     }
 
-    private int dimension = 2;
+    private int dimension;
     public int Dimension 
     {
       get { return dimension; }

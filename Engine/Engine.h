@@ -72,7 +72,7 @@ public:
     {
       Links[i] = links[i];
     }
-    Solver.Initialize(particleCount * 4, &WorkingParticles[0].Position.Data[0], [this](const Number* y, Number* fy)
+    Solver.Initialize(particleCount * Dim * 2, &WorkingParticles[0].Position.Data[0], [this](const Number* y, Number* fy)
     {
       return Calculate((const MyParticle*)y, (MyParticle*)fy);
     });
@@ -136,7 +136,7 @@ private:
         outputs[j].Velocity -= v * ParticleInfos[i].Mass;
       }
       outputs[i].Velocity -= inputs[i].Velocity * Params.In.Viscosity;
-      outputs[i].Velocity.Data[1] += Params.In.Gravity;
+      outputs[i].Velocity.Data[0] += Params.In.Gravity;
     }
 
     for (int i = 0; i < LinkCount; i++)
