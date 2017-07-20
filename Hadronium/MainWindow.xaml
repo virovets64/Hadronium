@@ -10,8 +10,6 @@
     <CommandBinding Command="{x:Static custom:MainWindow.AddParticlesCmd}" Executed="AddParticlesCmd_Executed" CanExecute="AddParticlesCmd_CanExecute" />
     <CommandBinding Command="{x:Static custom:MainWindow.StartCmd}" Executed="StartCmd_Executed" CanExecute="StartCmd_CanExecute" />
     <CommandBinding Command="{x:Static custom:MainWindow.StopCmd}" Executed="StopCmd_Executed" CanExecute="StopCmd_CanExecute" />
-    <CommandBinding Command="{x:Static custom:MainWindow.PinCmd}" Executed="PinCmd_Executed" CanExecute="PinCmd_CanExecute" />
-    <CommandBinding Command="{x:Static custom:MainWindow.UnpinCmd}" CanExecute="UnpinCmd_CanExecute" Executed="UnpinCmd_Executed" />
     <CommandBinding Command="{x:Static custom:MainWindow.LinkCmd}" Executed="LinkCmd_Executed" CanExecute="LinkCmd_CanExecute"/>
     <CommandBinding Command="{x:Static custom:MainWindow.UnlinkCmd}" CanExecute="UnlinkCmd_CanExecute" Executed="UnlinkCmd_Executed" />
     <CommandBinding Command="{x:Static custom:MainWindow.Deselect}" Executed="DeselectCmd_Executed" />
@@ -43,8 +41,8 @@
         <MenuItem Header="Link" Command="{x:Static custom:MainWindow.LinkCmd}"/>
         <MenuItem Header="Unlink"  Command="{x:Static custom:MainWindow.UnlinkCmd}"/>
         <Separator/>
-        <MenuItem Header="Pin" Command="{x:Static custom:MainWindow.PinCmd}"/>
-        <MenuItem Header="Unpin"  Command="{x:Static custom:MainWindow.UnpinCmd}"/>
+        <MenuItem Header="Pin" Command="{x:Static custom:ModelControl.PinCmd}" CommandTarget="{Binding ElementName=modelControl}"/>
+        <MenuItem Header="Unpin"  Command="{x:Static custom:ModelControl.UnpinCmd}" CommandTarget="{Binding ElementName=modelControl}"/>
         <Separator/>
         <MenuItem Header="Start" Command="{x:Static custom:MainWindow.StartCmd}"/>
         <MenuItem Header="Stop"  Command="{x:Static custom:MainWindow.StopCmd}"/>

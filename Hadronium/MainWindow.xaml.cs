@@ -32,8 +32,6 @@ namespace Hadronium
         public static RoutedCommand AddParticlesCmd = new RoutedCommand();
         public static RoutedCommand StartCmd = new RoutedCommand();
         public static RoutedCommand StopCmd = new RoutedCommand();
-        public static RoutedCommand PinCmd = new RoutedCommand();
-        public static RoutedCommand UnpinCmd = new RoutedCommand();
         public static RoutedCommand LinkCmd = new RoutedCommand();
         public static RoutedCommand UnlinkCmd = new RoutedCommand();
 
@@ -271,8 +269,7 @@ namespace Hadronium
             dialog.LinkCount = 10;
             if (dialog.ShowDialog() == true)
             {
-                modelControl.NewRandomModel(dialog.ParticleCount, dialog.LinkCount);
-                ModelRecreated();
+                modelControl.AddRandomParticles(dialog.ParticleCount, dialog.LinkCount);
             }
         }
         
@@ -309,26 +306,6 @@ namespace Hadronium
         private void StopCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = model.Active;
-        }
-
-        private void PinCmd_Executed(object sender, ExecutedRoutedEventArgs e)
-        {
-            modelControl.Pin(true);
-        }
-
-        private void PinCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
-        {
-            e.CanExecute = modelControl != null && modelControl.CanPin(true);
-        }
-
-        private void UnpinCmd_Executed(object sender, ExecutedRoutedEventArgs e)
-        {
-            modelControl.Pin(false);
-        }
-
-        private void UnpinCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
-        {
-            e.CanExecute = modelControl != null && modelControl.CanPin(false);
         }
 
         private void LinkCmd_Executed(object sender, ExecutedRoutedEventArgs e)

@@ -14,6 +14,21 @@ namespace Hadronium
 {
     public class ModelControl : FrameworkElement, INotifyPropertyChanged
     {
+        public ModelControl()
+        {
+            bindCommand(PinCmd,
+                (e) => Pin(true),
+                (e) => CanPin(true)
+            );
+            bindCommand(UnpinCmd,
+                (e) => Pin(false),
+                (e) => CanPin(false)
+            );
+        }
+
+        public static RoutedCommand PinCmd = new RoutedCommand();
+        public static RoutedCommand UnpinCmd = new RoutedCommand();
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         public Model Model
@@ -173,6 +188,15 @@ namespace Hadronium
             return bmp;
         }
 
+        private void bindCommand(ICommand command, Action<ExecutedRoutedEventArgs> execute, Predicate<CanExecuteRoutedEventArgs> canExecute)
+        {
+            CommandBindings.Add(
+                new CommandBinding(command,
+                (x, e) => execute(e),
+                (x, e) => e.CanExecute = model != null && canExecute(e))
+            );
+        }
+
         Random random = new Random();
 
         private Color getRandomColor()
@@ -187,7 +211,7 @@ namespace Hadronium
             return color;
         }
 
-        public void NewRandomModel(int particleCount, int linkCount)
+        public void AddRandomParticles(int particleCount, int linkCount)
         {
             model.AddRandomParticles(particleCount, linkCount, GetInitialRect());
 
