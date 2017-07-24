@@ -17,17 +17,56 @@ namespace Hadronium
         public ModelControl()
         {
             bindCommand(PinCmd,
-                (e) => Pin(true),
-                (e) => CanPin(true)
+                e => Pin(true),
+                e => CanPin(true)
             );
             bindCommand(UnpinCmd,
-                (e) => Pin(false),
-                (e) => CanPin(false)
+                e => Pin(false),
+                e => CanPin(false)
+            );
+            bindCommand(LinkCmd,
+                e => Link(true),
+                e => CanLink(true)
+            );
+            bindCommand(UnlinkCmd,
+                e => Link(false),
+                e => CanLink(false)
+            );
+            bindCommand(ApplicationCommands.SelectAll,
+                e => SelectAll(true),
+                e => true
+            );
+            bindCommand(DeselectCmd,
+                e => SelectAll(false),
+                e => true
+            );
+            bindCommand(StartCmd,
+                e => model.Active = true,
+                e => !model.Active
+            );
+            bindCommand(StopCmd,
+                e => model.Active = false,
+                e => model.Active
+            );
+            bindCommand(RandomizeCmd,
+                e => RandomizePositions(),
+                e => true
+            );
+            bindCommand(AddParticlesCmd,
+                e => AddRandomParticles(),
+                e => !model.Active
             );
         }
 
         public static RoutedCommand PinCmd = new RoutedCommand();
         public static RoutedCommand UnpinCmd = new RoutedCommand();
+        public static RoutedCommand LinkCmd = new RoutedCommand();
+        public static RoutedCommand UnlinkCmd = new RoutedCommand();
+        public static RoutedCommand DeselectCmd = new RoutedCommand();
+        public static RoutedCommand StartCmd = new RoutedCommand();
+        public static RoutedCommand StopCmd = new RoutedCommand();
+        public static RoutedCommand RandomizeCmd = new RoutedCommand();
+        public static RoutedCommand AddParticlesCmd = new RoutedCommand();
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -211,15 +250,20 @@ namespace Hadronium
             return color;
         }
 
-        public void AddRandomParticles(int particleCount, int linkCount)
+        private void AddRandomParticles()
         {
-            model.AddRandomParticles(particleCount, linkCount, GetInitialRect());
-
-            foreach (var p in model.Particles)
+            var dialog = new ParticleGenerationDialog();
+            dialog.ParticleCount = 5;
+            dialog.LinkCount = 10;
+            if (dialog.ShowDialog() == true)
             {
-                p.FillColor = getRandomColor();
+                model.AddRandomParticles(dialog.ParticleCount, dialog.LinkCount, GetInitialRect());
+
+                foreach (var p in model.Particles)
+                    p.FillColor = getRandomColor();
+
+                InvalidateVisual();
             }
-            InvalidateVisual();
         }
 
 

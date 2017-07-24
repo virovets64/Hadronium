@@ -27,13 +27,6 @@ namespace Hadronium
         public static RoutedCommand NewCmd = new RoutedCommand();
         public static RoutedCommand ClearCmd = new RoutedCommand();
         public static RoutedCommand LoadCmd = new RoutedCommand();
-        public static RoutedCommand Deselect = new RoutedCommand();
-        public static RoutedCommand RandomizeCmd = new RoutedCommand();
-        public static RoutedCommand AddParticlesCmd = new RoutedCommand();
-        public static RoutedCommand StartCmd = new RoutedCommand();
-        public static RoutedCommand StopCmd = new RoutedCommand();
-        public static RoutedCommand LinkCmd = new RoutedCommand();
-        public static RoutedCommand UnlinkCmd = new RoutedCommand();
 
         private static PropertyDescription[] modelPropertyDescriptions = new PropertyDescription[] { 
             new PropertyDescription("TimeScale"         ,   1.0, 0.01, 1000.0, new LogarithmicConverter(), "RealTimeScale"),
@@ -250,82 +243,6 @@ namespace Hadronium
         private void ClearCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = !model.Active;
-        }
-
-        private void SelectAllCmd_Executed(object sender, ExecutedRoutedEventArgs e)
-        {
-            modelControl.SelectAll(true);
-        }
-
-        private void DeselectCmd_Executed(object sender, ExecutedRoutedEventArgs e)
-        {
-            modelControl.SelectAll(false);
-        }
-
-        private void AddParticlesCmd_Executed(object sender, ExecutedRoutedEventArgs e)
-        {
-            var dialog = new ParticleGenerationDialog();
-            dialog.ParticleCount = 5;
-            dialog.LinkCount = 10;
-            if (dialog.ShowDialog() == true)
-            {
-                modelControl.AddRandomParticles(dialog.ParticleCount, dialog.LinkCount);
-            }
-        }
-        
-        private void AddParticlesCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
-        {
-            e.CanExecute = !model.Active;
-        }
-        
-        private void RandomizeCmd_Executed(object sender, ExecutedRoutedEventArgs e)
-        {
-            modelControl.RandomizePositions();
-        }
-        
-        private void RandomizeCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
-        {
-            e.CanExecute = true;
-        }
-        
-        private void StartCmd_Executed(object sender, ExecutedRoutedEventArgs e)
-        {
-            model.Start();
-        }
-        
-        private void StartCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
-        {
-            e.CanExecute = !model.Active;
-        }
-        
-        private void StopCmd_Executed(object sender, ExecutedRoutedEventArgs e)
-        {
-            model.Stop();
-        }
-        
-        private void StopCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
-        {
-            e.CanExecute = model.Active;
-        }
-
-        private void LinkCmd_Executed(object sender, ExecutedRoutedEventArgs e)
-        {
-            modelControl.Link(true);
-        }
-
-        private void LinkCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
-        {
-            e.CanExecute = modelControl != null && modelControl.CanLink(true);
-        }
-
-        private void UnlinkCmd_Executed(object sender, ExecutedRoutedEventArgs e)
-        {
-            modelControl.Link(false);
-        }
-
-        private void UnlinkCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
-        {
-            e.CanExecute = modelControl != null && modelControl.CanLink(false);
         }
 
         private void SaveModelToFile(string fileName)

@@ -196,12 +196,6 @@ namespace Hadronium
                -v.X * sin / scale
             };
         }
-
-        public double Rotation
-        {
-            get { return rotX; }
-            set { rotX = value; }
-        }
     }
 
 }

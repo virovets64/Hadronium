@@ -6,16 +6,8 @@
   <Window.CommandBindings>
     <CommandBinding Command="{x:Static custom:MainWindow.NewCmd}" Executed="NewCmd_Executed" CanExecute="NewCmd_CanExecute"/>
     <CommandBinding Command="{x:Static custom:MainWindow.ClearCmd}" Executed="ClearCmd_Executed" CanExecute="ClearCmd_CanExecute"/>
-    <CommandBinding Command="{x:Static custom:MainWindow.RandomizeCmd}" Executed="RandomizeCmd_Executed" CanExecute="RandomizeCmd_CanExecute" />
-    <CommandBinding Command="{x:Static custom:MainWindow.AddParticlesCmd}" Executed="AddParticlesCmd_Executed" CanExecute="AddParticlesCmd_CanExecute" />
-    <CommandBinding Command="{x:Static custom:MainWindow.StartCmd}" Executed="StartCmd_Executed" CanExecute="StartCmd_CanExecute" />
-    <CommandBinding Command="{x:Static custom:MainWindow.StopCmd}" Executed="StopCmd_Executed" CanExecute="StopCmd_CanExecute" />
-    <CommandBinding Command="{x:Static custom:MainWindow.LinkCmd}" Executed="LinkCmd_Executed" CanExecute="LinkCmd_CanExecute"/>
-    <CommandBinding Command="{x:Static custom:MainWindow.UnlinkCmd}" CanExecute="UnlinkCmd_CanExecute" Executed="UnlinkCmd_Executed" />
-    <CommandBinding Command="{x:Static custom:MainWindow.Deselect}" Executed="DeselectCmd_Executed" />
     <CommandBinding Command="Open" Executed="OpenCmd_Executed" />
     <CommandBinding Command="Save" Executed="SaveCmd_Executed" />
-    <CommandBinding Command="SelectAll" Executed="SelectAllCmd_Executed" />
   </Window.CommandBindings>
 
   <DockPanel LastChildFill="True">
@@ -32,20 +24,20 @@
         </MenuItem>
         <MenuItem Header="Edit">
           <MenuItem Header="Clear" Command="{x:Static custom:MainWindow.ClearCmd}"/>
-          <MenuItem Header="Add particles..." Command="{x:Static custom:MainWindow.AddParticlesCmd}"/>
-          <MenuItem Header="Randomize particle positions" Command="{x:Static custom:MainWindow.RandomizeCmd}"/>
-          <MenuItem Header="Select All" Command="ApplicationCommands.SelectAll"/>
-          <MenuItem Header="Deselect" Command="{x:Static custom:MainWindow.Deselect}"/>
+          <MenuItem Header="Add particles..." Command="{x:Static custom:ModelControl.AddParticlesCmd}" CommandTarget="{Binding ElementName=modelControl}"/>
+          <MenuItem Header="Randomize particle positions" Command="{x:Static custom:ModelControl.RandomizeCmd}" CommandTarget="{Binding ElementName=modelControl}"/>
+          <MenuItem Header="Select All" Command="ApplicationCommands.SelectAll" CommandTarget="{Binding ElementName=modelControl}"/>
+          <MenuItem Header="Deselect" Command="{x:Static custom:ModelControl.DeselectCmd}" CommandTarget="{Binding ElementName=modelControl}"/>
         </MenuItem>
         <Separator/>
-        <MenuItem Header="Link" Command="{x:Static custom:MainWindow.LinkCmd}"/>
-        <MenuItem Header="Unlink"  Command="{x:Static custom:MainWindow.UnlinkCmd}"/>
+        <MenuItem Header="Link" Command="{x:Static custom:ModelControl.LinkCmd}" CommandTarget="{Binding ElementName=modelControl}"/>
+        <MenuItem Header="Unlink"  Command="{x:Static custom:ModelControl.UnlinkCmd}" CommandTarget="{Binding ElementName=modelControl}"/>
         <Separator/>
         <MenuItem Header="Pin" Command="{x:Static custom:ModelControl.PinCmd}" CommandTarget="{Binding ElementName=modelControl}"/>
         <MenuItem Header="Unpin"  Command="{x:Static custom:ModelControl.UnpinCmd}" CommandTarget="{Binding ElementName=modelControl}"/>
         <Separator/>
-        <MenuItem Header="Start" Command="{x:Static custom:MainWindow.StartCmd}"/>
-        <MenuItem Header="Stop"  Command="{x:Static custom:MainWindow.StopCmd}"/>
+        <MenuItem Header="Start" Command="{x:Static custom:ModelControl.StartCmd}" CommandTarget="{Binding ElementName=modelControl}"/>
+        <MenuItem Header="Stop"  Command="{x:Static custom:ModelControl.StopCmd}" CommandTarget="{Binding ElementName=modelControl}"/>
       </Menu>
     </WrapPanel>
     <ScrollViewer Width="300" DockPanel.Dock="Right">
