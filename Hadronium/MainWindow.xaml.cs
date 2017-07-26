@@ -29,29 +29,29 @@ namespace Hadronium
         public static RoutedCommand LoadCmd = new RoutedCommand();
 
         private static PropertyDescription[] modelPropertyDescriptions = new PropertyDescription[] { 
-            new PropertyDescription("TimeScale"         ,   1.0, 0.01, 1000.0, new LogarithmicConverter(), "RealTimeScale"),
-            new PropertyDescription("ParticleAttraction",  -1.0, -1E3, 1E3, new BiLogarithmicConverter(1)),
-            new PropertyDescription("LinkAttraction"    ,  10.0, -1E4, 1E4, new BiLogarithmicConverter(10)),
-            new PropertyDescription("StretchAttraction" ,   0.0, -1E4, 1E4, new BiLogarithmicConverter(1)),
-            new PropertyDescription("Gravity"           ,   0.0, -1E3, 1E3, new BiLogarithmicConverter(1)),
-            new PropertyDescription("Viscosity"         ,  10.0,  0.0, 1000.0, new LogarithmicConverter()),
-            new PropertyDescription("Accuracy"          ,  50.0,  0.1,  1E5, new LogarithmicConverter()),
+            new PropertyDescription(SourceKind.Model, "TimeScale"         ,   1.0, 0.01, 1000.0, new LogarithmicConverter(), "RealTimeScale"),
+            new PropertyDescription(SourceKind.Model, "ParticleAttraction",  -1.0, -1E3, 1E3, new BiLogarithmicConverter(1)),
+            new PropertyDescription(SourceKind.Model, "LinkAttraction"    ,  10.0, -1E4, 1E4, new BiLogarithmicConverter(10)),
+            new PropertyDescription(SourceKind.Model, "StretchAttraction" ,   0.0, -1E4, 1E4, new BiLogarithmicConverter(1)),
+            new PropertyDescription(SourceKind.Model, "Gravity"           ,   0.0, -1E3, 1E3, new BiLogarithmicConverter(1)),
+            new PropertyDescription(SourceKind.Model, "Viscosity"         ,  10.0,  0.0, 1000.0, new LogarithmicConverter()),
+            new PropertyDescription(SourceKind.Model, "Accuracy"          ,  50.0,  0.1,  1E5, new LogarithmicConverter()),
         };
         private static PropertyDescription[] controlPropertyDescriptions = new PropertyDescription[] { 
-            new PropertyDescription("Rotation"          ,   0.0, -180.0, 180.0),
-            new PropertyDescription("ParticleSize"      ,   8.0, 0.8, 800.0, new LogarithmicConverter()),
-            new PropertyDescription("TextSize"          ,  12.0, 0.12, 1200.0, new LogarithmicConverter()),
-            new PropertyDescription("RefreshPeriod"     , 0.035, 0.0035, 0.35, new LogarithmicConverter(), "RenderElapsedTime"),
+            new PropertyDescription(SourceKind.View, "Rotation"          ,   0.0, -180.0, 180.0),
+            new PropertyDescription(SourceKind.View, "ParticleSize"      ,   8.0, 0.8, 800.0, new LogarithmicConverter()),
+            new PropertyDescription(SourceKind.View, "TextSize"          ,  12.0, 0.12, 1200.0, new LogarithmicConverter()),
+            new PropertyDescription(SourceKind.View, "RefreshPeriod"     , 0.035, 0.0035, 0.35, new LogarithmicConverter(), "RenderElapsedTime"),
         };
 
         private static PropertyDescription[] performancePropertyDescriptions = new PropertyDescription[] { 
-            new PropertyDescription("StepCount"         ,   1.0, 0.001, 1E5),
-            new PropertyDescription("StepElapsedTime"   ,   1.0, 0.001, 1E5,  new LogarithmicConverter()),
-            new PropertyDescription("RealTimeScale"     ,   1.0, 0.01, 1000.0, new LogarithmicConverter()),
-            new PropertyDescription("RenderElapsedTime"  ,   1.0, 1E-10, 1E5,  new LogarithmicConverter())
+            new PropertyDescription(SourceKind.Model, "StepCount"         ,   1.0, 0.001, 1E5),
+            new PropertyDescription(SourceKind.Model, "StepElapsedTime"   ,   1.0, 0.001, 1E5,  new LogarithmicConverter()),
+            new PropertyDescription(SourceKind.Model, "RealTimeScale"     ,   1.0, 0.01, 1000.0, new LogarithmicConverter()),
+            new PropertyDescription(SourceKind.View, "RenderElapsedTime" ,   1.0, 1E-5, 1E5,  new LogarithmicConverter())
         };
 
-        private void AddControls(object source, PropertyDescription[] propertyDescriptions, bool statistics, Color color, string header)
+        private void AddControls(PropertyDescription[] propertyDescriptions, bool statistics, Color color, string header)
         {
             var expander = new Expander();
             expander.Header = header;
@@ -63,6 +63,7 @@ namespace Hadronium
 
             foreach (var x in propertyDescriptions)
             {
+                object source = x.Kind == SourceKind.Model ? (object)model : (object)modelControl;
                 var propertyPanel = new StackPanel();
                 //        propertyPanel.Margin = new Thickness(0, 0, 0, 4);
                 propertyPanel.Orientation = Orientation.Vertical;
@@ -79,15 +80,19 @@ namespace Hadronium
 
                 if (statistics)
                 {
-                    var label2 = new Label();
+                    var textBox = new TextBox();
+                    textBox.IsReadOnly = true;
+                    textBox.VerticalAlignment = VerticalAlignment.Center;
                     Binding textBinding = new Binding(x.Name);
                     textBinding.Source = source;
-                    label2.SetBinding(Label.ContentProperty, textBinding);
-                    textPanel.Children.Add(label2);
+                    textBinding.StringFormat = "{0:G4}";
+                    textBox.SetBinding(TextBox.TextProperty, textBinding);
+                    textPanel.Children.Add(textBox);
                 }
                 else
                 {
                     var textBox = new TextBox();
+                    textBox.VerticalAlignment = VerticalAlignment.Center;
                     Binding textBinding = new Binding(x.Name);
                     textBinding.Source = source;
                     textBinding.StringFormat = "{0:0.000}";
@@ -157,9 +162,9 @@ namespace Hadronium
             tunePanel.Orientation = Orientation.Vertical;
             controlPanel.Children.Add(tunePanel);
 
-            AddControls(model, modelPropertyDescriptions, false, Color.FromRgb(255, 240, 230), "Model");
-            AddControls(modelControl, controlPropertyDescriptions, false, Color.FromRgb(240, 230, 255), "View");
-            AddControls(model, performancePropertyDescriptions, true, Color.FromRgb(230, 255, 240), "Performance");
+            AddControls(modelPropertyDescriptions, false, Color.FromRgb(255, 240, 230), "Model");
+            AddControls(controlPropertyDescriptions, false, Color.FromRgb(240, 230, 255), "View");
+            AddControls(performancePropertyDescriptions, true, Color.FromRgb(230, 255, 240), "Performance");
         }
 
         public MainWindow()

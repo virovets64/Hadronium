@@ -4,11 +4,13 @@ using System.Reflection;
 
 namespace Hadronium
 {
+    public enum SourceKind { Model, View };
     public class PropertyDescription
     {
-        public PropertyDescription(string name, object defaultValue, object minimum, object maximum,
+        public PropertyDescription(SourceKind kind, string name, object defaultValue, object minimum, object maximum,
             IValueConverter converter = null, string feedbackPropertyName = null)
         {
+            Kind = kind;
             Name = name;
             DefaultValue = defaultValue;
             Minimum = minimum;
@@ -18,6 +20,7 @@ namespace Hadronium
             //            ReadOnly = readOnly;
         }
 
+        public SourceKind Kind;
         public string Name;
         public object DefaultValue;
         public object Minimum;
