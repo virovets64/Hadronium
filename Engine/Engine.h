@@ -10,11 +10,7 @@
 class EngineBase
 {
 public:
-  virtual ~EngineBase()
-  {
-    ShouldStop = true;
-    WorkerThread.join();
-  }
+  virtual ~EngineBase() = default;
 
   virtual void Start(Parameters& parameters,
     long particleCount,
@@ -24,6 +20,12 @@ public:
     LinkInfo* links) = 0;
 
   virtual void Sync(Parameters& parameters, double* particleData, ParticleInfo* particleInfos) = 0;
+
+  void Stop()
+  {
+    ShouldStop = true;
+    WorkerThread.join();
+  }
 
   __int64 GetStepCount() const
   {
@@ -45,6 +47,11 @@ class Engine: public EngineBase
 {
 public:
   using MyParticle = Particle<Number, Dim>;
+
+  ~Engine()
+  {
+    Stop();
+  }
 
   virtual void Start(Parameters& parameters,
     long particleCount,
