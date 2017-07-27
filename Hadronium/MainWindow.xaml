@@ -29,6 +29,9 @@
           <MenuItem Header="Select All" Command="ApplicationCommands.SelectAll" CommandTarget="{Binding ElementName=modelControl}"/>
           <MenuItem Header="Deselect" Command="{x:Static custom:ModelControl.DeselectCmd}" CommandTarget="{Binding ElementName=modelControl}"/>
         </MenuItem>
+        <MenuItem Header="View">
+          <MenuItem Header="Fit" Command="{x:Static custom:ModelControl.FitCmd}" CommandTarget="{Binding ElementName=modelControl}"/>
+        </MenuItem>
         <Separator/>
         <MenuItem Header="Link" Command="{x:Static custom:ModelControl.LinkCmd}" CommandTarget="{Binding ElementName=modelControl}"/>
         <MenuItem Header="Unlink"  Command="{x:Static custom:ModelControl.UnlinkCmd}" CommandTarget="{Binding ElementName=modelControl}"/>

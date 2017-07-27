@@ -56,6 +56,10 @@ namespace Hadronium
                 e => AddRandomParticles(),
                 e => !model.Active
             );
+            bindCommand(FitCmd,
+                e => FitScaleToModel(),
+                e => true
+            );
         }
 
         public static RoutedCommand PinCmd = new RoutedCommand();
@@ -67,6 +71,7 @@ namespace Hadronium
         public static RoutedCommand StopCmd = new RoutedCommand();
         public static RoutedCommand RandomizeCmd = new RoutedCommand();
         public static RoutedCommand AddParticlesCmd = new RoutedCommand();
+        public static RoutedCommand FitCmd = new RoutedCommand();
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -78,6 +83,8 @@ namespace Hadronium
             }
             set
             {
+                if (model == value)
+                    return;
                 model = value;
                 switch (model.Dimension)
                 {
@@ -92,7 +99,31 @@ namespace Hadronium
                         break;
                 }
                 transform.RenderSize = RenderSize;
+                FitScaleToModel();
+                InvalidateVisual();
             }
+        }
+
+        public void FitScaleToModel()
+        {
+            if (model.Particles.Count == 0)
+                return;
+            Rect dstRect = GetRectToFit();
+            if (dstRect.Size.Width == 0 || dstRect.Size.Height == 0)
+                return;
+            var box = new Box(model.Dimension);
+            for (int i = 0; i < model.Dimension; i++)
+            {
+                box.P1[i] = double.MaxValue;
+                box.P2[i] = double.MinValue;
+                foreach (var p in model.Particles)
+                {
+                    box.P1[i] = Math.Min(box.P1[i], p.Position[i]);
+                    box.P2[i] = Math.Max(box.P2[i], p.Position[i]);
+                }
+            }
+            transform.Fit(box, dstRect);
+            InvalidateVisual();
         }
 
         public double RefreshPeriod
@@ -214,7 +245,6 @@ namespace Hadronium
 
         public RenderTargetBitmap RenderToBitmap()
         {
-
             DrawingVisual drawingVisual = new DrawingVisual();
             DrawingContext drawingContext = drawingVisual.RenderOpen();
             OnRender(drawingContext);
@@ -257,7 +287,7 @@ namespace Hadronium
             dialog.LinkCount = 10;
             if (dialog.ShowDialog() == true)
             {
-                model.AddRandomParticles(dialog.ParticleCount, dialog.LinkCount, GetInitialRect());
+                model.AddRandomParticles(dialog.ParticleCount, dialog.LinkCount, GetBoxToFit());
 
                 foreach (var p in model.Particles)
                     p.FillColor = getRandomColor();
@@ -326,7 +356,6 @@ namespace Hadronium
             //            model.Changed += new EventHandler(model_Changed);
             myTimer = new DispatcherTimer(new TimeSpan((long)(refreshPeriod * 10000)), DispatcherPriority.SystemIdle, TimerProc, Dispatcher);
             createPinImage();
-
         }
 
         SelectionAdorner selectionAdorner;
@@ -598,18 +627,22 @@ namespace Hadronium
             ChangeScale(transform.ViewScale * coef, e.GetPosition(this));
         }
 
-        public Box GetInitialRect()
+        public Rect GetRectToFit()
         {
             Size size = RenderSize;
             Rect rect = new Rect(size);
-            rect.Inflate(-size.Width / 4, -size.Height / 4);
-            var result = transform.ToWorld(rect);
-            return result;
+            rect.Inflate(-size.Width / 8, -size.Height / 8);
+            return rect;
+        }
+
+        public Box GetBoxToFit()
+        {
+            return transform.ToWorld(GetRectToFit());
         }
 
         internal void RandomizePositions()
         {
-            model.RandomizePositions(GetInitialRect());
+            model.RandomizePositions(GetBoxToFit());
             InvalidateVisual();
         }
     }

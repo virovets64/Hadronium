@@ -58,6 +58,27 @@ namespace Hadronium
 
         public double[] P1;
         public double[] P2;
+        public double[] Size
+        {
+            get 
+            {
+                var result = new double[P1.Length];
+                for (int i = 0; i < P1.Length; i++)
+                    result[i] = P2[i] - P1[i];
+                return result;
+            }
+        }
+        public double[] Center
+        {
+            get
+            {
+                var result = new double[P1.Length];
+                for (int i = 0; i < P1.Length; i++)
+                    result[i] = (P1[i] + P2[i]) / 2;
+                return result;
+            }
+        }
+
     }
 
     public class Model : INotifyPropertyChanged

@@ -55,6 +55,9 @@ namespace Hadronium
             return true;
         }
 
+        public virtual void Fit(Box source, Rect dest)
+        { }
+
         public Vector Offset
         {
             get { return offset; }
@@ -78,6 +81,19 @@ namespace Hadronium
         protected override void SetOffset(Vector value)
         {
             offset.Y = value.Y;
+        }
+
+        public override void Fit(Box source, Rect dest)
+        {
+            var srcDiag = source.Size;
+            var dstDiag = dest.BottomRight - dest.TopLeft;
+            var newScale = Math.Abs(dstDiag.Y / srcDiag[0]);
+            if (double.IsInfinity(newScale))
+                return;
+            scale = newScale;
+            var dstCenter = dest.TopLeft + dstDiag * 0.5;
+            var srcCenter = source.Center;
+            offset.Y = dstCenter.Y - scale * srcCenter[0];
         }
 
         protected override void SetRenderSize(Size size)
@@ -111,6 +127,20 @@ namespace Hadronium
         protected override void SetOffset(Vector value)
         {
             offset = value;
+        }
+
+        public override void Fit(Box source, Rect dest)
+        {
+            var srcDiag = source.Size;
+            var dstDiag = dest.BottomRight - dest.TopLeft;
+            var newScale = Math.Min(Math.Abs(dstDiag.Y / srcDiag[0]), Math.Abs(dstDiag.X / srcDiag[1]));
+            if (double.IsInfinity(newScale))
+                return;
+            scale = newScale;
+            var dstCenter = dest.TopLeft + dstDiag * 0.5;
+            var srcCenter = source.Center;
+            offset.X = dstCenter.X - scale * srcCenter[1];
+            offset.Y = dstCenter.Y - scale * srcCenter[0];
         }
 
         public override Point ToScreen(double[] d)
@@ -162,6 +192,20 @@ namespace Hadronium
         protected override double GetRotation()
         {
             return rotX;
+        }
+
+        public override void Fit(Box source, Rect dest)
+        {
+            var srcDiag = source.Size;
+            var dstDiag = dest.BottomRight - dest.TopLeft;
+            var newScale = Math.Min(Math.Abs(dstDiag.Y / srcDiag[0]), Math.Abs(dstDiag.X / srcDiag[1]));
+            if (double.IsInfinity(newScale))
+                return;
+            scale = newScale;
+            var dstCenter = dest.TopLeft + dstDiag * 0.5;
+            var srcCenter = source.Center;
+            offset.X = dstCenter.X - scale * srcCenter[1];
+            offset.Y = dstCenter.Y - scale * srcCenter[0];
         }
 
         public override Point ToScreen(double[] d)

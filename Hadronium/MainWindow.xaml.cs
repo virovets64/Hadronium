@@ -170,18 +170,20 @@ namespace Hadronium
         public MainWindow()
         {
             InitializeComponent();
-//            modelControl = new ModelControl();
             modelControl.ClipToBounds = true;
-//            modelPlaceholder.Content = modelControl;
-            try
+            
+            Loaded += delegate
             {
-                LoadModelFromFile(autosaveFilename);
-            }
-            catch
-            {
-                model = new Model(2);
-            }
-            ModelRecreated();
+                try
+                {
+                    LoadModelFromFile(autosaveFilename);
+                }
+                catch
+                {
+                    model = new Model(2);
+                }
+                ModelRecreated();
+            };
         }
 
 
@@ -241,8 +243,8 @@ namespace Hadronium
 
         private void ClearCmd_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            modelControl.Model.Clear();
-            ModelRecreated();
+            model.Clear();
+            modelControl.InvalidateVisual();
         }
 
         private void ClearCmd_CanExecute(object sender, CanExecuteRoutedEventArgs e)
@@ -304,14 +306,13 @@ namespace Hadronium
 
                 }
             }
-            model.RandomizePositions(modelControl.GetInitialRect());
+            modelControl.RandomizePositions();
         }
 
         private void ModelRecreated()
         {
             modelControl.Model = model;
             CreateTunePanel();
-            modelControl.InvalidateVisual();
         }
 
         private void PrepareDialog(FileDialog fileDialog, bool forSave)
